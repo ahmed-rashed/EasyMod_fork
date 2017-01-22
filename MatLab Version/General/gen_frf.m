@@ -1,4 +1,4 @@
-function [recep,mobil,inert] = gen_frf(M,D,K,numin,numout,freq)
+function [recep,mobil,inert] = gen_frf(M,C,K,numin,numout,freq)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  User function
@@ -25,17 +25,14 @@ function [recep,mobil,inert] = gen_frf(M,D,K,numin,numout,freq)
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS
 
 
-freq  =  freq(:) ;
+freq = freq(:) ;
 omega = freq*2*pi ;
-tfunc1 = omega ;
+recep = nan(size(omega)) ;
 for i = 1:length(omega)
-    MDK = K+1i*omega(i)*D-omega(i)^2*M ;
-    MDKi = inv(MDK) ;  
-    tfunc1(i) = MDKi(numin,numout) ;
+    H_i = K-omega(i)^2*M+1i*omega(i)*C ;
+    H_i = invinv(H_i) ;  
+    recep(i) = H_i_inv(numin,numout) ;
 end
-tfunc2 = tfunc1.*omega*1i ;
-tfunc3 = -tfunc1.*omega.^2 ;
-recep = tfunc1 ;
-mobil = tfunc2 ;
-inert = tfunc3 ;
+mobil = recep.*omega*1i ;
+inert = -recep.*omega.^2 ;
 
