@@ -1,4 +1,4 @@
-function I=ind_mode(H)
+function I=ind_mode(H_cols)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  User function
@@ -7,10 +7,10 @@ function I=ind_mode(H)
 %  part and sum of FRFs imaginary part.
 %
 %  Synthax:
-%  I=ind_mode(H)
+%  I=ind_mode(H_cols)
 %
 %  Input data:
-%  H: FRF matrix containing all the FRFs (column number=FRF number). 
+%  H_cols: FRF matrix containing all the FRFs (column number=FRF number). 
 %
 %  Output data:
 %  I: structure containing the different indicators
@@ -21,10 +21,9 @@ function I=ind_mode(H)
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS
 
 
-[m,n]=size(H);
-for index=1:m
-    ISUM(index,1)=sum(abs(H(index,:)))/n;
-    ISRe(index,1)=sum(real(H(index,:)))./sum(abs(H(index,:)))/n;
-    ISIm(index,1)=sum(imag(H(index,:)))/n;
-end
+n=size(H_cols,2);
+ISUM=sum(abs(H_cols),2)/n;
+ISRe=sum(real(H_cols),2)/n;
+ISIm=sum(imag(H_cols),2)/n;
+
 I=struct('ISUM',ISUM,'ISRe',ISRe,'ISIm',ISIm);

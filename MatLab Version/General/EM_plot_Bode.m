@@ -17,21 +17,21 @@ function EM_plot_Bode(freq,H,fmin,fmax)
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS
 
 
-N = length(freq) ;
+N=length(freq);
 if (nargin<4) 
-    fmax = N ;
+    fmax=N;
 end
 if (nargin<3) 
-    fmin = freq(1) ;
+    fmin=freq(1);
 end
-imin = 1 ;
-imax = 1 ;
-for ifr = 1:N
+imin=1;
+imax=1;
+for ifr=1:N
   if (freq(ifr)<fmin) 
-      imin = ifr ;
+      imin=ifr;
   end
   if (freq(ifr)<fmax) 
-      imax = ifr ;
+      imax=ifr;
   end
 end
 subplot(211)

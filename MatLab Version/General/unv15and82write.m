@@ -23,58 +23,58 @@ function unv15and82write(Nodes,Connexions,filename,NodeColor,LineColor)
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS
 
 
-N = size(Nodes,1) ;
+N=size(Nodes,1);
 if size(Nodes,2) ~= 4
-    error('Nodes matrix uncorrect') ;
+    error('Nodes matrix uncorrect');
 end
-Connexions = Connexions(:) ;
-C = length(Connexions) ;
+Connexions=Connexions(:);
+C=length(Connexions);
 
-Fname= fopen(filename,'w') ;
+Fname= fopen(filename,'w');
 
 % Data Set Delimiters
-fprintf(Fname,'%6.0f\n',-1) ; 
-fprintf(Fname,'%6.0f\n',15) ;
+fprintf(Fname,'%6.0f\n',-1); 
+fprintf(Fname,'%6.0f\n',15);
    
 % Record  - Fields 1 to 7
 for i=1:N
-    fprintf(Fname,'%10i',Nodes(i,1)) ;
-    fprintf(Fname,'%10i',0) ;
-    fprintf(Fname,'%10i',0) ;
-    fprintf(Fname,'%10i',NodeColor) ;
-    fprintf(Fname,'%13.5e',Nodes(i,2)) ;
-    fprintf(Fname,'%13.5e',Nodes(i,3)) ;
-    fprintf(Fname,'%13.5e',Nodes(i,4)) ;
-    fprintf(Fname,'\n') ; 
+    fprintf(Fname,'%10i',Nodes(i,1));
+    fprintf(Fname,'%10i',0);
+    fprintf(Fname,'%10i',0);
+    fprintf(Fname,'%10i',NodeColor);
+    fprintf(Fname,'%13.5e',Nodes(i,2));
+    fprintf(Fname,'%13.5e',Nodes(i,3));
+    fprintf(Fname,'%13.5e',Nodes(i,4));
+    fprintf(Fname,'\n'); 
 end
    
 % Data Set Delimiter
-fprintf(Fname,'%6.0f\n',-1) ; 
+fprintf(Fname,'%6.0f\n',-1); 
 
 % Data Set Delimiters
-fprintf(Fname,'%6.0f\n',-1) ; 
-fprintf(Fname,'%6.0f\n',82) ;
+fprintf(Fname,'%6.0f\n',-1); 
+fprintf(Fname,'%6.0f\n',82);
  
 % Record 1
-fprintf(Fname,'%10i',1) ;
-fprintf(Fname,'%10i',C) ;
-fprintf(Fname,'%10i\n',LineColor) ;
+fprintf(Fname,'%10i',1);
+fprintf(Fname,'%10i',C);
+fprintf(Fname,'%10i\n',LineColor);
 
 % Record 2
-fprintf(Fname,'%1.80s\n','NONE') ;
+fprintf(Fname,'%1.80s\n','NONE');
    
 % Record  - Fields 1 to 7
 for i=1:C
-    fprintf(Fname,'%10i',Connexions(i)) ;
+    fprintf(Fname,'%10i',Connexions(i));
     if mod(i,8) == 0
-         fprintf(Fname,'\n') ; 
+         fprintf(Fname,'\n'); 
     end
 end
 if mod(C,8) ~= 0
-    fprintf(Fname,'\n') ;
+    fprintf(Fname,'\n');
 end
    
 % Data Set Delimiter
-fprintf(Fname,'%6.0f\n',-1) ; 
+fprintf(Fname,'%6.0f\n',-1); 
 
-fclose(Fname) ;
+fclose(Fname);
