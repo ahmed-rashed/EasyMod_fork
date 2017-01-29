@@ -1,82 +1,48 @@
-function [psi_phys,fn_phys,xi_phys]=mode_lsce(H,deltaT,Z,Nmode,Nt) 
+function [A_r_phys,w_n_r_phys,zeta_r_phys]=mode_lsce(h_cols,D_t,Z_col,N_modes,N_t)
  
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
 %
-%  Extraction of "physical modes", that's to say the modes corresponding to
-%  complex conjugate poles.
+%  Extraction of "physical modes", that's to say the modes corresponding to complex conjugate poles.
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS
 
-
-[MM NN]=size(Z);  
-for ind=1:MM
-    if  Z(ind,Nmode) == 0
-        break
-    end
-        z(ind,1)=Z(ind,Nmode); 
-end
-lambda=log(z)./deltaT;
-wd=imag(lambda); 
-delta=real(lambda); 
-wn=sqrt(wd.^2+delta.^2); 
-fn=wn/(2*pi); 
-xi=-(delta./wn); 
-[fn_ord,ind_ord]=sort(fn);
-for index=1:length(fn_ord)
-    z_ord(index)=z(ind_ord(index)); 
-    xi_ord(index)=xi(ind_ord(index)); 
+if N_t<2*N_modes
+    error('Number of samples insufficient for the requested number of modes!')
 end
 
-% Solving equation Vr=h
-VV=zeros(2*Nmode,2*Nmode); 
-for kk=1:1:2*Nmode; 
-    for jj=1:1:2*Nmode; 
-        VV(kk,jj)=z_ord(jj).^(kk-1); 
-    end
+ind=find(Z_col==0,1);
+V_r_col=Z_col(1:ind-1);
+
+lambda_r=log(V_r_col)./D_t;
+w_d_r=imag(lambda_r); 
+delta_r=real(lambda_r); 
+w_n_r=sqrt(w_d_r.^2+delta_r.^2); 
+zeta_r=-(delta_r./w_n_r);
+
+[w_n_r,i_sort]=sort(w_n_r/2/pi);
+V_r_col=V_r_col(i_sort);
+zeta_r=zeta_r(i_sort);
+
+% Solving equation V_mat * A_r_temp= h [Maia, eqn 4.14]
+V_mat=zeros(2*N_modes,2*N_modes); 
+for ii=1:2*N_modes
+    V_mat(ii,:)=V_r_col(1:2*N_modes).'.^(ii-1); 
 end
 
-[MM,LL]=size(H); 
-Ni=LL/Nt; 
-No=MM; 
-Phi=[]; 
-
-if Nt<2*Nmode
-    error('Number of samples insufficient for the number of modes under consideration!')
-end
-
-for ind=1:1:No
-    rr=zeros(Ni,2*Nmode);    
-    for ind2=1:Ni 
-        hh=H(ind,Nt*(ind2-1)+1:1:Nt*(ind2-1)+2*Nmode); 
-        hh=hh.'; 
-        temp=VV\hh; 
-        rr(ind2,:)=temp.';         
+[L,N_out]=size(h_cols); 
+Ni=floor(L/N_t);
+A_r=nan(2*N_modes,N_out);
+for ind=1:N_out
+    A_r_temp=zeros(2*N_modes,Ni);
+    for ind2=1:Ni
+        A_r_temp(:,ind2)=V_mat\h_cols(N_t*(ind2-1)+(1:2*N_modes),ind);
     end
-    if Ni == 1
-        Phi_ord(ind,:)=rr;
-    else
-        Phi_ord(ind,:)=sum(rr)/Ni;
-    end
-    
+    A_r(:,ind)=mean(A_r_temp,2);
+    A_r(:,ind)=A_r(:,ind)/A_r(1,ind);   % Eigenvector normalization
 end
 
 % Extracting the physical modes (frequencies which appear two times)
-jj=0;
-ii=0;
-phi=[]; 
-for index=1:length(fn_ord)-1
-    ii=ii+1;
-    if abs(fn_ord(index)-fn_ord(index+1)) < 1e-8; 
-        jj=jj+1; 
-        psi_phys(:,jj)=Phi_ord(:,index); 
-        fn_phys(jj)=fn_ord(index); 
-        xi_phys(jj)=xi_ord(index); 
-    end
-end
-[MM,NN]=size(psi_phys); 
-
-% Eigenvector normalization
-for ind=1:NN
-    psi_phys(:,ind)=psi_phys(:,ind)/psi_phys(1,ind); 
-end
+[w_n_r_phys,i_w_n_r]=uniquetol(w_n_r,1e-8*2*pi/max(abs(w_n_r)));
+zeta_r_phys=zeta_r(i_w_n_r);
+A_r_phys=A_r(i_w_n_r,:);

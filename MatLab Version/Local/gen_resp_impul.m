@@ -1,4 +1,4 @@
-function [MatIRs]=gen_resp_impul(H,ff,str_array)
+function h_mat=gen_resp_impul(H_oneSided_cols,f_col,infoFRF)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
@@ -7,31 +7,23 @@ function [MatIRs]=gen_resp_impul(H,ff,str_array)
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS
 
+[n,N_H]=size(H_oneSided_cols);
+N_t=2*n-2;
 
-om=2*pi*ff;
-[M,N]=size(H);
-for ind=1:N     
-      % Calculation of the corresponding impulse response
-      i=str_array(ind).response;
-      j=str_array(ind).excitation;
-      [x,temps]=InvFft(H(:,ind),om);
-      % Memory allocation in the matrix MatIRs
-      v=length(x);
-      X(i,(j-1)*v+1:j*v)=x;
-      % This matrix serves to visualize which impulse responses are available
-      visu(i,j)=1;
-end   
-
-% The matrix is completed by zeros
-m=size(visu,1);
-p=size(visu,2);
-diff=m-p;
-if diff ~= 0
-   for k=1:diff
-      X(:,(p+k-1)*v+1:(p+k)*v)=zeros(m,v);
-   end
+% Initializa the matrix with zeros
+N_out=max([infoFRF.response]);
+N_inp=max([infoFRF.excitation]);
+h_mat=zeros(N_out,max(N_out,N_inp)*N_t);
+for ind=1:N_H
+      i=infoFRF(ind).response;
+      j=infoFRF(ind).excitation;
+      h_col=ifft_one_sided(H_oneSided_cols(:,ind))*N_t;
+      h_mat(i,(j-1)*N_t+1:j*N_t)=h_col;
 end
 
 % Time vector is added and it is identitical for all the responses
-X(m+1,1:v)=temps;
-MatIRs=X;
+D_f=f_col(2)-f_col(1);
+f_s=N_t*D_f;
+D_t=1/f_s;
+t_row=(0:N_t-1)/D_t;
+h_mat(N_out+1,1:N_t)=t_row;

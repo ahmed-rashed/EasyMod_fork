@@ -1,4 +1,4 @@
-function [H,Ni,nddl,Np,dt]=AnMatIR(mat)
+function [h_rows,N_inp,N_out,N_t,D_t]=AnMatIR(h_mat)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
@@ -16,31 +16,17 @@ function [H,Ni,nddl,Np,dt]=AnMatIR(mat)
 
 
 % Definition of the number of DOF
-clear nddl
-nddl=size(mat,1)-1; 
-a=sprintf('The studied structure has %1.0f degrees of freedom',nddl);
-disp(' ')
-disp('-----------------------------------------------------------------------------');
-disp(' ')
-disp(a)
+N_out=size(h_mat,1)-1; 
 
 % nombre de points de mesure
-clear dl Np I temps dt
-dl=find(mat(nddl+1,:));
-Np=max(dl);
-b=sprintf('%1.0f measurement samples are enumerated',Np);
-disp(' ');
-disp(b);
-I=mat(1:nddl,:);
-temps=mat(nddl+1,1:Np);
-dt=temps(2)-temps(1);
+N_t=max(find(h_mat(end,:)));
+D_t=h_mat(end,2)-h_mat(end,1);
 
 % test on the impulse responses
-clear ncol test i j 
-ncol=size(mat,2)/Np;
-for i=1:nddl
-   for j=1:ncol
-      if norm(mat(i,(j-1)*Np+1:j*Np)) ~= 0
+N_col=size(h_mat,2)/N_t;
+for i=1:N_out
+   for j=1:N_col
+      if norm(h_mat(i,(j-1)*N_t+1:j*N_t)) ~= 0
          test(i,j) =1;
       else
          test(i,j) =0;
@@ -53,14 +39,12 @@ disp('(availability of the matrix h)');
 disp('if h(i,j)=1 then impulse response is available for measurement at point i and excitation at point j');
 
 % Test for obtaining the number of input Ni
-clear Ni s H c  
-Ni=0;
+N_inp=0;
 disp(' ');
-for s=1:ncol
-   if norm(test(:,s)) == 0
-   else
-      Ni=Ni+1;
-      H(:,(Ni-1)*Np+1:Ni*Np)=mat(1:nddl,(s-1)*Np+1:s*Np);
+for s=1:N_col
+   if norm(test(:,s))
+      N_inp=N_inp+1;
+      h_rows(:,(N_inp-1)*N_t+1:N_inp*N_t)=h_mat(1:N_out,(s-1)*N_t+1:s*N_t);
       c=sprintf('Input at DOF %1.0f',s);
       disp(c);
    end

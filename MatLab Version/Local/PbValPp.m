@@ -1,4 +1,4 @@
-function [L,z]=PbValPp(x,Ni,p)
+function [L,z_col]=PbValPp(beta_cols,N_inp,p)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
@@ -13,39 +13,41 @@ function [L,z]=PbValPp(x,Ni,p)
 %  ppolyval.m
 
 
-% Extraction of coefficients A1,...,Ap of dimension (Ni x Ni)
-%   (Ap + z*Ap-1 +  ... + z^p-1*A1+z^p)*L=0
+% Extraction of coefficients A1,...,A_{p} of dimension (N_inp x N_inp)
+%   (A_{p} + z_col*A_{p-1} +  ... + z_col^{p-1}*A_{1}+z_col^{p})*L=0
+A=zeros(N_inp,N_inp,p);
 for j=1:p
-   A(:,:,j)=x((j-1)*Ni+1:j*Ni,:);
+   A(:,:,j)=beta_cols((j-1)*N_inp+(1:N_inp),:);
 end
 
 % Transformation for solving the problem
-%   (B0 + z*B1 +  ... + z^p*Bp)*L=0
+%   (B_{0} + z_col*B_{1} +  ... + z_col^{p}*B_{p})*L=0
+B=zeros(N_inp,N_inp,p+1);
 for i=1:p
-   B(:,:,1+(i-1))=A(:,:,p-(i-1));
+   B(:,:,i)=A(:,:,p-(i-1));
 end
-B(:,:,p+1)=eye(Ni);
+B(:,:,p+1)=eye(N_inp);
 
-% Building of two matrices p*Ni x p*Ni
+% Building of two matrices p*N_inp x p*N_inp
 %    J=[B0   0   0   0]   K=[-B1 -B2 -B3 -B4]
-%        [ 0   I   0   0]       [  I   0   0   0]
-%        [ 0   0   I   0]       [  0   I   0   0]
-%        [ 0   0   0   I]       [  0   0   I   0]
-J=eye(Ni*p,Ni*p);
-J(1:Ni,1:Ni)=B(:,:,1);
+%      [ 0   I   0   0]     [  I   0   0   0]
+%      [ 0   0   I   0]     [  0   I   0   0]
+%      [ 0   0   0   I]     [  0   0   I   0]
+J=eye(N_inp*p);
+J(1:N_inp,1:N_inp)=B(:,:,1);
 if p == 0
-   K=eye(Ni,Ni);
+   K=eye(N_inp);
    p=1;
 else
-   K=diag(ones(Ni*(p-1),1),-Ni);
+   K=diag(ones(N_inp*(p-1),1),-N_inp);
    for k=1:p
-      K(1:Ni,(k-1)*Ni+1:k*Ni)=-B(:,:,k+1);
+      K(1:N_inp,(k-1)*N_inp+1:k*N_inp)=-B(:,:,k+1);
    end
 end
 
 % Using ppolyval function
-[L,z]=ppolyval(J,K,Ni,p);
-lz=length(z);
-for k=1:lz
+[L,z_col]=ppolyval(J,K,N_inp,p);
+%Eigenvector scaling
+for k=1:size(L,2)
    L(:,k)=L(:,k)/L(1,k);
 end

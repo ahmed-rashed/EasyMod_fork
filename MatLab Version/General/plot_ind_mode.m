@@ -1,88 +1,56 @@
-function [cursor1,cursor2]=plot_ind_mode(I,freq)
+function plot_ind_mode(H_cols,freq)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  User function
 %
-%  This function displays the three mode indicators - sum of FRFs, sum of FRFs
+%  This function displays the three mode indicators - sum of FRFs absolute, sum of FRFs
 %  real part and sum of FRFs imaginary part.
 %
 %  Synthax:
-%  [cursor1,cursor2]=plot_ind_mode(I,freq)
+%  plot_ind_mode(H_cols,freq)
 %
 %  Input data:
 %  freq: frequency vector,
-%  I: structure containing the different indicators
-%        I.ISUM: sum of included FRFs,
-%        I.ISRe: sum of included real part FRFs,
-%        I.ISIm: sum of included imaginary part FRFs.
+%  H_cols: FRF matrix containing all the FRFs (column number=FRF number). 
 %
-%  Output data:
-%  cursor1 and cursor2: parameters related to the cursor (x,y) of plot.
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS
 
+n=size(H_cols,2);
+ISUM=sum(abs(H_cols),2)/n;
+ISRe=sum(real(H_cols),2)/n;
+ISIm=sum(imag(H_cols),2)/n;
 
-disp('(1): sum of included FRFs ');
-disp('(2): sum of included real part FRFs ');
-disp('(3): sum of included imaginary part FRFs ');
-di=input('Select?','s');
+fig=figure;
+subplot(3,1,1)
+semilogy(freq,ISUM);
+set(gca,'XTickLabel',[])
+ylabel('$\sum\left|H\right|$','interpreter', 'latex');
 
-switch di
-    case '1'
-        gca=figure;
-        plot(freq,20*log10(I.ISUM));
-        grid on;
-        xlabel('Frequency  [Hz]');
-        ylabel('sum of included FRFs  [dB]');
-        cursor1=uicontrol('style','text','position',[10 10 60 15]);
-        cursor2=uicontrol('style','text','position',[80 10 60 15]);
-        set(uicontrol,'style','text','position',[10 30 60 15],'string','Frequency [Hz]:');
-        set(uicontrol,'style','text','position',[80 30 60 15],'string','Gain [dB]:');
-        com1=[...
-                'val=get(gca,''CurrentPoint'');'...
-                'frequency=val(1,1);'...
-                'Gain=val(1,2);'...
-                'set(cursor1,''string'',num2str(frequency));'...
-                'set(cursor2,''string'',num2str(Gain));'...
-            ];
-        set(gca,'WindowButtonMotionFcn',com1);
-    case '2'
-        gca=figure;
-        plot(freq,20*log10(abs(I.ISRe)))
-        grid on
-        xlabel('Frequency  [Hz]')
-        ylabel('sum of included real part FRFs  [dB]')
-        cursor1=uicontrol('style','text','position',[10 10 60 15]);
-        cursor2=uicontrol('style','text','position',[80 10 60 15]);
-        set(uicontrol,'style','text','position',[10 30 60 15],'string','Frequency [Hz]:');
-        set(uicontrol,'style','text','position',[80 30 60 15],'string','Gain [dB]:');
-        com1=[...
-                'val=get(gca,''CurrentPoint'');'...
-                'frequency=val(1,1);'...
-                'Gain=val(1,2);'...
-                'set(cursor1,''string'',num2str(frequency));'...
-                'set(cursor2,''string'',num2str(Gain));'...
-            ];
-        set(gca,'WindowButtonMotionFcn',com1);
-    case '3'
-        gca=figure;
-        plot(freq,20*log10(abs(I.ISIm)))
-        grid on
-        xlabel('Frequency  [Hz]')
-        ylabel('sum of included imaginary part FRFs  [dB]')
-        cursor1=uicontrol('style','text','position',[10 10 60 15]);
-        cursor2=uicontrol('style','text','position',[80 10 60 15]);
-        set(uicontrol,'style','text','position',[10 30 60 15],'string','Frequency [Hz]:');
-        set(uicontrol,'style','text','position',[80 30 60 15],'string','Gain [dB]:');
-        com1=[...
-                'val=get(gca,''CurrentPoint'');'...
-                'frequency=val(1,1);'...
-                'Gain=val(1,2);'...
-                'set(cursor1,''string'',num2str(frequency));'...
-                'set(cursor2,''string'',num2str(Gain));'...
-            ];
-        set(gca,'WindowButtonMotionFcn',com1);
-    otherwise
-        disp('Invalid request')
+subplot(3,1,2)
+semilogy(freq,abs(ISRe))
+set(gca,'XTickLabel',[])
+ylabel('$\sum\Re\left(H\right)$','interpreter', 'latex')
+
+subplot(3,1,3)
+semilogy(freq,abs(ISIm))
+xlabel('$f$ (Hz)', 'interpreter', 'latex')
+ylabel('$\sum\Im\left(H\right)$','interpreter', 'latex')
+
+for ii=1:3
+    subplot(3,1,ii)
+    grid on
 end
-        
+
+global cursor1 cursor2;
+
+cursor1=uicontrol('style','text','position',[10 0 60 15],'BackgroundColor',[1,1,1]);
+cursor2=uicontrol('style','text','position',[80 0 60 15],'BackgroundColor',[1,1,1]);
+set(uicontrol,'style','text','position',[10 15 60 15],'string','f (Hz)','BackgroundColor',[1,1,1]);
+set(uicontrol,'style','text','position',[80 15 300 15],'string','   Gain     (click axes to display its coordinates)','HorizontalAlignment','left','BackgroundColor',[1,1,1]);
+com1=['val=get(gca,''CurrentPoint'');'...
+		'frequency=val(1,1);'...
+		'Gain=val(1,2);'...
+		'set(cursor1,''string'',num2str(frequency));'...
+		'set(cursor2,''string'',num2str(Gain));'];
+set(fig,'WindowButtonMotionFcn',com1);

@@ -1,4 +1,4 @@
-function [ftemp,xitemp,testxi,FNMOD,XIMOD]=rec(fn,xi,N, FMAX,ftemp,xitemp,testxi,FNMOD,XIMOD,prec1,prec2)
+function [f_n_temp,zeta_temp,testzeta,FNMOD,ZETAMOD]=rec(f_n_r,zeta_r,N, f_max,f_n_temp,zeta_temp,testzeta,FNMOD,ZETAMOD,prec1,prec2)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
@@ -7,23 +7,22 @@ function [ftemp,xitemp,testxi,FNMOD,XIMOD]=rec(fn,xi,N, FMAX,ftemp,xitemp,testxi
 %  values obtained in the current step and the ones of the previous step
 %
 %  Input data:
-%  fn: natural frequency vector,
-%  xi: damping vector,
+%  f_n_r: natural frequency vector,
+%  zeta: damping vector,
 %  N: number of mode in the current step,
-%  FMAX: maximum freqneucy covered by the data (for directly eliminating
-%  the frequency out of range),
-%  ftemp: eigenvalue matrix obtained in the previous step,
-%  xitemp: damping matrix obtained in the previous step,
-%  testxi: test matrix giving information about the damping stabilisation,
+%  f_max: maximum freqneucy covered by the data (for directly eliminating the frequency out of range),
+%  f_n_temp: eigenvalue matrix obtained in the previous step,
+%  zeta_temp: damping matrix obtained in the previous step,
+%  testzeta: test matrix giving information about the damping stabilisation,
 %  FNMOD: matrix where frequency values are saved before comparison,
 %  XIMOD: matrix where damping values are saved before comparison,
 %  prec1: tolerance in frequency,
 %  prec2: tolerance in damping.
 %
 %  Output data:
-%  ftemp: updated eigenvalue matrix,
-%  xitemp: updated damping matrix,
-%  testxi: updated test matrix,
+%  f_n_temp: updated eigenvalue matrix,
+%  zeta_temp: updated damping matrix,
+%  testzeta: updated test matrix,
 %  FNMOD et XIMOD: updated matrices.
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS, Delphine LUPANT
@@ -35,92 +34,87 @@ function [ftemp,xitemp,testxi,FNMOD,XIMOD]=rec(fn,xi,N, FMAX,ftemp,xitemp,testxi
 
 
 % elimination of double (conjugate poles)
-[fnmod,ximod]=dedoubl(fn,xi);
-A=length(fnmod);
-FNMOD(1:A,N)=fnmod;
-XIMOD(1:A,N)=ximod;
+[f_n_mod,i_f_n_r]=uniquetol(f_n_r,1e-7/max(abs(f_n_r)));
+zeta_mod=zeta_r(i_f_n_r);
+A=length(f_n_mod);
+FNMOD(1:A,N)=f_n_mod;
+ZETAMOD(1:A,N)=zeta_mod;
 
 if N == 1
    % first step
-   A=length(fnmod);
-   ftemp(1:A,1)=fnmod;
-   xitemp(1:A,1)=ximod;
+   f_n_temp(1:A,1)=f_n_mod;
+   zeta_temp(1:A,1)=zeta_mod;
    % Next steps are identical
 else
    % starting data
-   A=length(fnmod);
-   f=find(ftemp(:,N-1));
+   f=find(f_n_temp(:,N-1));
    B=length(f);
    derf=max(f);   
    % Previous step is defined as start
    for a=1:A
       % Vector test is created, whith values equal to:
-      % * 1 at line b, if fnmod(a) is equal to ftemp(b)
+      % * 1 at line b, if fnmod(a) is equal to f_n_temp(b)
       % * 0 otherwise.
-      clear test
-      test=zeros(1,B);
-      if fnmod(a) < FMAX
+      test=false(1,B);
+      if f_n_mod(a) < f_max
          for i=1:B
             b=f(i);
-            if (abs(fnmod(a)-ftemp(b,N-1))/ftemp(b,N-1)) < prec1
-               test(i)=1;
+            if (abs(f_n_mod(a)-f_n_temp(b,N-1))/f_n_temp(b,N-1)) < prec1
+               test(i)=true;
             end
          end
          % Vector test is created
          % If vector is null, fnmod(a) does not correspond to any frequency already obtained.
-         % --> fnmod(a) is added after ftemp
-         % --> ximod(a) is added after xitemp
-         % --> testxi(a)=0 is imposed
-         if norm(test) == 0
+         % --> fnmod(a) is added after f_n_temp
+         % --> ximod(a) is added after zeta_temp
+         % --> testzeta(a)=0 is imposed
+         if all(~test)
             derf=derf+1;
-            ftemp(derf,N)=fnmod(a);
-            xitemp(derf,N)=ximod(a);
-            testxi(derf,N)=0;
+            f_n_temp(derf,N)=f_n_mod(a);
+            zeta_temp(derf,N)=zeta_mod(a);
+            testzeta(derf,N)=0;
          end
-         % If the vector contains only one 1, fnmod(a) correspond to one of the frequencies already obtained.
-         % --> a means is performed
-         % --> value is stored in ftemp  at the line of the corresponding frequency
-         if norm(test) == 1
-            clear x j
-            x=find(test);
-            j=f(x);
-            ftemp(j,N)=(fnmod(a)+ftemp(j,N-1))/2;
+         nn=length(find(test));
+         if nn==1
+            % If the vector contains only one 1, fnmod(a) correspond to one of the frequencies already obtained.
+            % --> a means is performed
+            % --> value is stored in f_n_temp  at the line of the corresponding frequency
+
+            j=f(test);
+            f_n_temp(j,N)=(f_n_mod(a)+f_n_temp(j,N-1))/2;
             % The same test is performed for the damping
-            if (abs(ximod(a)-xitemp(j,N-1))/xitemp(j,N-1))<prec2
-               xitemp(j,N)=(ximod(a)+xitemp(j,N-1))/2;
-               testxi(j,N)=1;
+            if (abs(zeta_mod(a)-zeta_temp(j,N-1))/zeta_temp(j,N-1))<prec2
+               zeta_temp(j,N)=(zeta_mod(a)+zeta_temp(j,N-1))/2;
+               testzeta(j,N)=1;
             else
-               xitemp(j,N)=ximod(a);
+               zeta_temp(j,N)=zeta_mod(a);
             end
-         end
-         % If the vector contains various 1, fnmod(a) correspond to the frequencies already obtained.
-         % --> we look for whicg fnmod(a) is closer
-         % --> a means is performed
-         % --> value is stored in ftemp  at the line of the corresponding frequency
-         if norm(test) > 1
-            clear y k m comp pgd Y n
+         elseif nn > 1
+            % If the vector contains various 1, fnmod(a) correspond to the frequencies already obtained.
+            % --> we look for whicg fnmod(a) is closer
+            % --> a means is performed
+            % --> value is stored in f_n_temp  at the line of the corresponding frequency
             y=find(test);
+            comp=zeros(1,length(y));
             for k=1:length(y)
                m=f(y(k));
-               comp(k)=abs(fnmod(a)-ftemp(m,N-1));
+               comp(k)=abs(f_n_mod(a)-f_n_temp(m,N-1));
             end
-            [pgd,Y]=min(comp);
+            [~,Y]=min(comp);
             n=f(y(Y));
-            ftemp(n,N)=(fnmod(a)+ftemp(n,N-1))/2;
+            f_n_temp(n,N)=(f_n_mod(a)+f_n_temp(n,N-1))/2;
             % The same test is performed for the damping
-            if (abs(ximod(a)-xitemp(n,N-1))/xitemp(n,N-1)) < prec2
-               xitemp(n,N)=(ximod(a)+xitemp(n,N-1))/2;
-               testxi(n,N)=1;
+            if (abs(zeta_mod(a)-zeta_temp(n,N-1))/zeta_temp(n,N-1)) < prec2
+               zeta_temp(n,N)=(zeta_mod(a)+zeta_temp(n,N-1))/2;
+               testzeta(n,N)=1;
             else
-               xitemp(n,N)=ximod(a);
-               testxi(n,N)=0;
+               zeta_temp(n,N)=zeta_mod(a);
+               testzeta(n,N)=0;
             end
          end
       else
          
       end
    end
-   ftemp;
-   xitemp;
 end
 

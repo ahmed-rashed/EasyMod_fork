@@ -1,4 +1,4 @@
-function stabdiag(ftemp,xitemp,testxi,FMAX,MaxMod,H,f)
+function stabdiag(ftemp,xitemp,testxi,FMAX,MaxMod,H_cols,f)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
@@ -11,7 +11,7 @@ function stabdiag(ftemp,xitemp,testxi,FMAX,MaxMod,H,f)
 %  testxi: updated test matrix,
 %  FMAX: maximum freqneucy covered by the data,
 %  MaxMod: maximum number of modes to calculate in the iterations,
-%  H: FRF matrix,
+%  H_cols: FRF matrix,
 %  f: frequency vector.
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS, Delphine LUPANT
@@ -32,7 +32,7 @@ hold on;
 I=size(ftemp,1);
 
 % Displaying one FRF on the chart
-HdB=abs(H(:,1));
+HdB=abs(H_cols(:,1));
 facteur=(max(HdB));
 HdB1=HdB/facteur*(MaxMod - 1);
 hold on;
@@ -72,11 +72,11 @@ for N=2:MaxMod
       end
    end
 end
-legend_plot=[];
+
 if exist('plot_d') 
     legend_plot=[plot_n(1);plot_f(1);plot_d(1)];
-    legend(legend_plot,' new mode',' frequency stabilization',' frequency - damping stabilization','Location','NorthEastOutside');
+    legend(legend_plot,' new mode',' frequency stabilization',' frequency - damping stabilization','Location','SouthEast');
 else
     legend_plot=[plot_n(1);plot_f(1)];
-    legend(legend_plot,' new mode',' frequency stabilization','Location','NorthEastOutside');
+    legend(legend_plot,' new mode',' frequency stabilization','Location','SouthEast');
 end

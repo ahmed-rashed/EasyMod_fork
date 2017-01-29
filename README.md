@@ -1,6 +1,8 @@
 This project was forked from EasyMod (http://hosting.umons.ac.be/html/mecara/EasyMod/)
 
-The following is the original copywrit of EasyMod
+One of the main reasons for establishing this project is the relatively coding of EasyMod
+
+The following is the original copywrite of EasyMod
 =======================================================================
 Copyright (C) 2012 Georges KOUROUSSIS
     Department of Theoretical Mechanics, Dynamics and Vibrations

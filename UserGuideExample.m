@@ -1,5 +1,6 @@
-% The best way to begin
 clearvars
+global cursor1 cursor2;
+
 close all
 clc
 
@@ -13,7 +14,8 @@ f_max=200;
 N=400;
 D_f=f_max/N;
 
-f_col=(0:N-1).'*D_f;
+% Check here
+f_col=((0:N-1)+1).'*D_f;
 
 ii_row=[1,1,1];
 jj_row=[1,2,3];
@@ -44,8 +46,7 @@ for ii=1:n_FRF
     plot_FRF_Nyq(Accelerance_cols(:,ii),H_label);
 end
 
-indicators=ind_mode(Accelerance_cols);
-[cursor1,cursor2]=plot_ind_mode(indicators,f_col);
+plot_ind_mode(Accelerance_cols,f_col);
 
 %% Circle-fit
 f_mode_min=[40 75 110];
@@ -81,8 +82,11 @@ infoMODE2=save_result_modal(infoFRF2);
 unv55write(infoMODE2,'3DL_line_fit.unv',1);
 
 %% Least-square complex exponential
-infoFRF3=infoFRF;
-[RES,infoFRF3,infoMODE3]=lsce(Accelerance_cols,f_col,infoFRF3);
+clc
+% check here; I think receptance should be used instead of accelerance
+Accelerance_oneSided_cols=Accelerance_cols;
+Accelerance_oneSided_cols(2:end,:)=2*Accelerance_cols(2:end,:);
+[RES,infoMODE3]=lsce(Accelerance_oneSided_cols,f_col,infoFRF);
 
 % Results saving
 unv55write(infoMODE3,'3DL_LSCE.unv',1)
