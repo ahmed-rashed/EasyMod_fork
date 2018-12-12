@@ -1,4 +1,4 @@
-function [f_r,eta_r,A_r]=DobsonMethod(f_local_vec,Receptance_local_vec,ShowInternalDetails)
+function [f_r,eta_r,A_r]=DobsonMethod(f_local_vec,Receptance_local_vec,ShowInternalDetails,label_str)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  User function
@@ -39,40 +39,42 @@ if N_pts < 5
 end
 
 % Dobson's method application
+Delta_cols=nan(N_pts-1,N_pts);
 w_Delta_cols=nan(N_pts-1,N_pts);
-Delta_cols=w_Delta_cols;
-for ind=1:N_pts
-    [w_Delta_cols(:,ind), Delta_cols(:,ind)]=estimate_delta(w_local_vec,Receptance_local_vec,ind);
+for n=1:N_pts
+    [w_Delta_cols(:,n), Delta_cols(:,n)]=estimate_Delta(w_local_vec,Receptance_local_vec,n);
 end
 
 % Best straight line finding
 tr=nan(size(f_local_vec));
-ti=tr;
-for ind=1:N_pts
-    p1=polyfit(w_Delta_cols(:,ind).^2,real(Delta_cols(:,ind)),1);
-    tr(ind)=p1(1);
-    p2=polyfit(w_Delta_cols(:,ind).^2,imag(Delta_cols(:,ind)),1);
-    ti(ind)=p2(1);
+ti=nan(size(f_local_vec));
+for n=1:N_pts
+    p1=polyfit(w_Delta_cols(:,n).^2,real(Delta_cols(:,n)),1);
+    tr(n)=p1(1);
+    p2=polyfit(w_Delta_cols(:,n).^2,imag(Delta_cols(:,n)),1);
+    ti(n)=p2(1);
 end
-p1=polyfit(w_local_vec.^2,tr,1);
-ur=p1(1);
-dr=p1(2);
-p2=polyfit(w_local_vec.^2,ti,1);
-ui=p2(1);
-di=p2(2);
+p3=polyfit(w_local_vec.^2,tr,1);
+ur=p3(1);
+dr=p3(2);
+p4=polyfit(w_local_vec.^2,ti,1);
+ui=p4(1);
+di=p4(2);
 
 % Modal parameters calculation
 p=ui/ur;
 q=di/dr;
 eta_r=(q-p)/(1+p*q);
 w_r=sqrt(dr/((p*eta_r-1)*ur));
-f_r=w_r/2/pi;
+
 a_r=w_r^2*(p*eta_r-1)/((1+p^2)*dr);
 b_r=-a_r*p;
 A_r=complex(a_r,b_r);
 
+f_r=w_r/2/pi;
+
 if ShowInternalDetails
     % Data saving
     line_prop=struct('ur',ur,'dr',dr,'ui',ui,'di',di,'tr',tr,'ti',ti,'w_Delta',w_Delta_cols,'Delta',Delta_cols);
-    plot_line_fit(f_local_vec,Receptance_local_vec,f_r,eta_r,A_r,line_prop);
+    DobsonInternalDetails(f_local_vec,Receptance_local_vec,f_r,eta_r,A_r,line_prop,label_str);
 end

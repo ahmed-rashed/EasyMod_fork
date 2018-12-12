@@ -21,6 +21,11 @@ n_FRF=length(ii_row);
 [EigVectors_Normalized, EigValues_mat]=MDOF_Eig_Visc(M, C, K);
 Receptance_cols=MDOF_FRF_Visc(EigValues_mat, EigVectors_Normalized, 2*pi*f_col, ii_row, jj_row);
 for ii=1:n_FRF
+    infoFRF(ii).response=ii;
+    infoFRF(ii).dir_response=3;
+    infoFRF(ii).excitation=1;
+    infoFRF(ii).dir_excitation=3;
+    
     unv58write(Receptance_cols(:,ii),1,3,ii,3,0,D_f,['3DL_H',num2str(jj_row(ii)),num2str(ii_row(ii)),'.unv']);
 end
 
@@ -37,7 +42,6 @@ for ii=1:n_FRF
         
         subplot(2,n_FRF,n_FRF+ii)
         plot_FRF_Nyq(Receptance_cols(:,ii),[],H_label);
-        %coloured_line_3d(real(Receptance(:,ii)),imag(Receptance(:,ii)),zeros(size(Receptance(:,ii))),f_col);view(2)
         hold on
     end
 end
@@ -49,11 +53,10 @@ f_mode_min=[40 80 110];
 f_mode_max=[60 100 130];
 n_modes=length(f_mode_min);
 f2=figure;
+infoFRF1=[];
+infoFRF2=[];
 for ii=1:n_FRF
-    infoFRF(ii).response=ii;
-    infoFRF(ii).dir_response=3;
-    infoFRF(ii).excitation=1;
-    infoFRF(ii).dir_excitation=3;
+    label_str=['\alpha_{',int2str(infoFRF(ii).response),',',int2str(infoFRF(ii).dir_excitation),'}'];
     
     Receptance_Calculated1=zeros(N,1);
     Receptance_Calculated2=zeros(N,1);
@@ -62,38 +65,31 @@ for ii=1:n_FRF
         Receptance_local_col=Receptance_cols(LocalZone_ind,ii);
         f_local_col=f_col(LocalZone_ind);
         
-        %Circle Fit
-        [f_r,eta_r,A_r,circ_prop]=FRF_CircleFit(f_local_col,Receptance_local_col,ShowInternalDetails_circleFit)
-        Receptance_Calculated1=Receptance_Calculated1+A_r./complex((2*pi*f_r)^2-(2*pi*f_col).^2,eta_r*(2*pi*f_r)^2);
+%         %Circle Fit
+%         [f_r,eta_r,A_r,circ_prop]=FRF_CircleFit(f_local_col,Receptance_local_col,ShowInternalDetails_circleFit,label_str);
+%         Receptance_Calculated1=Receptance_Calculated1+A_r./complex((2*pi*f_r)^2-(2*pi*f_col).^2,eta_r*(2*pi*f_r)^2);
+%         infoFRF1=add_data(ii,f_r,eta_r,A_r,infoFRF1,jj);
         
-%         %Receptance_local_col visualization
-%         figure(f2)
-%         ax=subplot(n_FRF,n_modes,(ii-1)*n_modes+jj);
-%         visualizeLocalReceptance(f_local_col,Receptance_local_col,circ_prop,ii_row(ii),jj_row(ii),ax);
-%         %infoFRF1=add_data(ii,infoMODE.frequencyk,infoMODE.etak,infoMODE.Bijk,infoFRF1,jj);
-        
-        
-        %Line-fit
-        [f_r,eta_r,A_r]=DobsonMethod(f_local_col,Receptance_local_col,ShowInternalDetails_Dobson);
+        %Dobson method
+        [f_r,eta_r,A_r]=DobsonMethod(f_local_col,Receptance_local_col,ShowInternalDetails_Dobson,label_str);
         Receptance_Calculated2=Receptance_Calculated2+A_r./complex((2*pi*f_r)^2-(2*pi*f_col).^2,eta_r*(2*pi*f_r)^2);
-        %infoFRF2=add_data(ii,infoMODE.frequencyk,infoMODE.etak,infoMODE.Bijk,infoFRF2,jj);
+        infoFRF2=add_data(ii,f_r,eta_r,A_r,infoFRF2,jj);
     end
     
     figure(f1)
     subplot(2,n_FRF,ii)
     semilogy(f_col,abs(Receptance_Calculated1),f_col,abs(Receptance_Calculated2))
-    legend('Measured','Circle fit','Line fit');
+    legend('Measured','Circle fit','Dobson method');
    
     subplot(2,n_FRF,n_FRF+ii)
-    %coloured_line_3d(real(Receptance(:,ii)),imag(Receptance(:,ii)),zeros(size(Receptance(:,ii))),f_col)
     plot(real(Receptance_Calculated1),imag(Receptance_Calculated1),real(Receptance_Calculated2),imag(Receptance_Calculated2))
-    legend('Measured','Circle fit','Line fit');
+    legend('Measured','Circle fit','Dobson method');
 end
 % Circle Fit Results saving
 % infoMODE1=save_result_modal(infoFRF1);
 % unv55write(infoMODE1,'3DL_circle_fit.unv',1);
 
-% Line-fit Results saving
+% Dobson method Results saving
 % infoMODE2=save_result_modal(infoFRF2);
 % unv55write(infoMODE2,'3DL_line_fit.unv',1);
 
