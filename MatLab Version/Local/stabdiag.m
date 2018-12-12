@@ -19,23 +19,23 @@ function stabdiag(ftemp,xitemp,testxi,FMAX,MaxMod,H_cols,f)
 
 N=1;
 y=N;
-fmax=max(f);
+
 figure;
 subplot(2,1,1);
 plot(ftemp(:,N),y,'o b');
 title('Stabilization diagram');
 xlabel('Frequency  [Hz]');
 ylabel('Number of modes');
-axis([0 fmax 0 MaxMod]);
+% axis([0 max(f) 0 MaxMod]);
 grid on;
 hold on;
 I=size(ftemp,1);
 
 % Displaying one FRF on the chart
 HdB=abs(H_cols(:,1));
-facteur=(max(HdB));
-HdB1=HdB/facteur*(MaxMod - 1);
-hold on;
+facteur=max(HdB);
+HdB1=HdB/facteur*(MaxMod-1);
+% hold on;
 plot(f,HdB1,'m');
 n=0;
 f=0;
@@ -73,7 +73,7 @@ for N=2:MaxMod
    end
 end
 
-if exist('plot_d') 
+if exist('plot_d','var') 
     legend_plot=[plot_n(1);plot_f(1);plot_d(1)];
     legend(legend_plot,' new mode',' frequency stabilization',' frequency - damping stabilization','Location','SouthEast');
 else

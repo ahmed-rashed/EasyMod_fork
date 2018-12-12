@@ -53,23 +53,33 @@ N_f_max=size(H_oneSided_cols,1)-1;
 f_max=N_f_max*D_f;
 [h_cols,N_inp,~,D_t]=calculate_h(H_oneSided_cols,D_f,infoFRF);
 
-% Calculation parameters capture
-%		- maximum iteration
-disp(' ');
-disp('-----------------------------------------------------------------------------');
-disp(' ');
-MaxMod=input('Model order - maximum iteration to analyse (defaults: 30):\n');    %Number of modes
-if isempty(MaxMod), MaxMod=30; end
-%		- the tolerance in frequency
-disp(' ');
-prec1=input('Tolerance (%) in frequency (defaults: 1%):\n');
-if isempty(prec1), prec1=1; end
-prec1=prec1/100;
-%		- the tolerance in damping
-disp(' ');
-prec2=input('Tolerance (%) in damping (defaults: 1%):\n');
-if isempty(prec2), prec2=1; end
-prec2=prec2/100;
+% Maximum iteration
+%%%%%%%%%%%%%%Modifications by Ahmed Rashed
+% disp(' ');
+% disp('-----------------------------------------------------------------------------');
+% disp(' ');
+% MaxMod=input('Model order - maximum iteration to analyse (defaults: 30):\n');    %Number of modes
+% if isempty(MaxMod), MaxMod=30; end
+MaxMod=10;
+
+% The tolerance in frequency
+%%%%%%%%%%%%%%Modifications by Ahmed Rashed
+% disp(' ');
+% prec1=input('Tolerance (%) in frequency (defaults: 1%):\n');
+% if isempty(prec1), prec1=1; end
+prec1=1;
+
+prec1_percent=prec1/100;
+
+
+% The tolerance in damping
+%%%%%%%%%%%%%%Modifications by Ahmed Rashed
+% disp(' ');
+% prec2=input('Tolerance (%) in damping (defaults: 1%):\n');
+% if isempty(prec2), prec2=1; end
+prec2=1;
+
+prec2_percent=prec2/100;
 
 % Definition of matrices allowed from the modal parameters at each step
 WD=zeros(2*MaxMod,MaxMod-1);
@@ -121,7 +131,7 @@ for N=1:MaxMod
    w_n_r=sqrt(w_d_r.^2+delta_r.^2);
    zeta_r=-delta_r./w_n_r;
    % Stabilization validation (frequency and damping)
-   [FTEMP,XITEMP,TESTXI,FNMOD,ZETAMOD]=rec(w_n_r/(2*pi),zeta_r,N,f_max,FTEMP,XITEMP,TESTXI,FNMOD,ZETAMOD,prec1,prec2);
+   [FTEMP,XITEMP,TESTXI,FNMOD,ZETAMOD]=rec(w_n_r/(2*pi),zeta_r,N,f_max,FTEMP,XITEMP,TESTXI,FNMOD,ZETAMOD,prec1_percent,prec2_percent);
 %    % Data saving
 %    WD(1:length(w_d_r),N)=w_d_r;
 %    WN(1:length(w_n_r),N)=w_n_r;
@@ -140,22 +150,24 @@ yyaxis left
 semilogy(epsilon,'.-');
 ylabel('Least squares error');
 grid on;
-zoom on;
+% zoom on;
 
 % Error chart visualization
-subplot(2,2,4);
+yyaxis right
 semilogy(InvCond,'.-');
-xlabel('Number of modes');
 ylabel('Conditioning error');
+xlabel('Number of modes');
 grid on;
-zoom on;
 
 % Selection of the model size
-disp(' ');
-disp('-----------------------------------------------------------------------------');
-disp(' ');
-N_modes=input('Based on the figures, select the number of modes (defult is the number of iterations):\n');
-if isempty(N_modes), N_modes=MaxMod; end
+%%%%%%%%%%%%%%Modifications by Ahmed Rashed
+% disp(' ');
+% disp('-----------------------------------------------------------------------------');
+% disp(' ');
+% N_modes=input('Based on the figures, select the number of modes (defult is the number of iterations):\n');
+% if isempty(N_modes), N_modes=MaxMod; end
+N_modes=7;
+
 %warning off
 
 % Results statement
@@ -168,4 +180,4 @@ disp(lsce_res);
 
 % Mode shape extraction
 [A_r_phys,w_n_r_phys,zeta_r_phys]=mode_lsce(h_cols,D_t,Z(:,N_modes),N_modes);
-infoMODE=mode_stab(infoFRF,A_r_phys,w_n_r_phys/2/pi,zeta_r_phys,lsce_res,prec1,prec2);
+infoMODE=mode_stab(infoFRF,A_r_phys,w_n_r_phys/2/pi,zeta_r_phys,lsce_res,prec1_percent,prec2_percent);
