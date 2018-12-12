@@ -32,10 +32,8 @@ function infoMODE=save_result_modal(infoFRF)
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS
 
 
-[M,N]=size(infoFRF);
-Nbr_frf=N;
-[M,N]=size(infoFRF(1).infoMODE);
-Nbr_mode=N;
+[~,Nbr_frf]=size(infoFRF);
+[~,Nbr_mode]=size(infoFRF(1).infoMODE);
 Nbr_FRF_estime=ones(Nbr_mode)*Nbr_frf;
 for i=1:Nbr_frf
     for j=1:Nbr_mode
@@ -46,18 +44,20 @@ for i=1:Nbr_frf
         end
     end
 end
+
 for index=1:Nbr_frf
      node_disp(index)=[infoFRF(index).response];
      disp_dir(index)=[infoFRF(index).dir_response];
 end
+
 node_fin=max(node_disp);
 node=[1:1:node_fin];
 Nbr_node=length(node);
 natural_frequency=zeros(1,Nbr_mode);
 visqueux_factor=zeros(1,Nbr_mode);
 psi=zeros(3*Nbr_node,Nbr_mode);
-for kk=1:Nbr_mode;
-    for jj=1:Nbr_frf;
+for kk=1:Nbr_mode
+    for jj=1:Nbr_frf
         temp_frequency=infoFRF(jj).infoMODE(kk).frequencyk;
         natural_frequency(kk)=natural_frequency(kk)+temp_frequency;
         temp_factor=infoFRF(jj).infoMODE(kk).etak;
@@ -66,13 +66,16 @@ for kk=1:Nbr_mode;
         psi((infoFRF(jj).response-1)*3+infoFRF(jj).dir_response,kk)=B;
     end
 end
+
 for i=1:Nbr_mode
    natural_frequency(i)=natural_frequency(i)/(Nbr_FRF_estime(i));
    visqueux_factor(i)=visqueux_factor(i)/(Nbr_FRF_estime(i));
 end
+
 % Normalization
 for index=1:Nbr_mode
    temp=find(abs(psi(:,index))>0);
    psi(:,index)=psi(:,index)/psi(temp(1,1),index);
 end
+
 infoMODE=struct('frequencyk',natural_frequency,'etak',visqueux_factor,'Bijk',psi);

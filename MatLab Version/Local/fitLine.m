@@ -1,4 +1,4 @@
-function [a,b]=moindre_carre(x,y)
+function [a,b]=fitLine(x,y)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function

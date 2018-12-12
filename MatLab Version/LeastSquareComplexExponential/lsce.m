@@ -51,7 +51,7 @@ function [lsce_res,infoMODE]=lsce(H_oneSided_cols,f_col,infoFRF)
 D_f=f_col(2)-f_col(1);
 N_f_max=size(H_oneSided_cols,1)-1;
 f_max=N_f_max*D_f;
-[h_cols,N_inp,N_out,N_t,D_t]=calculate_h(H_oneSided_cols,D_f,infoFRF);
+[h_cols,N_inp,~,D_t]=calculate_h(H_oneSided_cols,D_f,infoFRF);
 
 % Calculation parameters capture
 %		- maximum iteration
@@ -59,16 +59,16 @@ disp(' ');
 disp('-----------------------------------------------------------------------------');
 disp(' ');
 MaxMod=input('Model order - maximum iteration to analyse (defaults: 30):\n');    %Number of modes
-if isempty(MaxMod), MaxMod=30; end;
+if isempty(MaxMod), MaxMod=30; end
 %		- the tolerance in frequency
 disp(' ');
 prec1=input('Tolerance (%) in frequency (defaults: 1%):\n');
-if isempty(prec1), prec1=1; end;
+if isempty(prec1), prec1=1; end
 prec1=prec1/100;
 %		- the tolerance in damping
 disp(' ');
 prec2=input('Tolerance (%) in damping (defaults: 1%):\n');
-if isempty(prec2), prec2=1; end; 
+if isempty(prec2), prec2=1; end
 prec2=prec2/100;
 
 % Definition of matrices allowed from the modal parameters at each step
@@ -137,14 +137,14 @@ stabdiag(FTEMP,XITEMP,TESTXI,f_max,MaxMod,H_oneSided_cols,f_col);
 % Least squares error chart visualization
 subplot(2,1,2);
 yyaxis left
-semilogy(epsilon,'-.');
+semilogy(epsilon,'.-');
 ylabel('Least squares error');
 grid on;
 zoom on;
 
 % Error chart visualization
 subplot(2,2,4);
-semilogy(InvCond,'-.');
+semilogy(InvCond,'.-');
 xlabel('Number of modes');
 ylabel('Conditioning error');
 grid on;
@@ -155,7 +155,7 @@ disp(' ');
 disp('-----------------------------------------------------------------------------');
 disp(' ');
 N_modes=input('Based on the figures, select the number of modes (defult is the number of iterations):\n');
-if isempty(N_modes), N_modes=MaxMod; end;
+if isempty(N_modes), N_modes=MaxMod; end
 %warning off
 
 % Results statement

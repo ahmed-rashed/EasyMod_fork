@@ -1,4 +1,4 @@
-function [H,freq,infoFRF]=unv58read(filename)
+function [H_cols,f_col,infoFRF]=unv58read(filename)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  User function
@@ -17,83 +17,83 @@ function [H,freq,infoFRF]=unv58read(filename)
 %  freq: frequency vector,
 %  infoFRF: structure containing information on the FRF 
 %            infoFRF(jj).response=jjth FRF response node
-%            infoFRF(jj).dir_response=jjth FRF response direction (1=X, 2=Y,
-%             3=Z, 4=RotX, 5=RotY, 6=RotZ)
+%            infoFRF(jj).dir_response=jjth FRF response direction (1=X, 2=Y, 3=Z, 4=RotX, 5=RotY, 6=RotZ)
 %            infoFRF(jj).excitation=jjth FRF excitation node
 %            infoFRF(jj).dir_excitation=jjth FRF excitation direction
 %            (1=X, 2=Y, 3=Z, 4=RotX, 5=RotY, 6=RotZ). 
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS
 
-
-name_file=[filename];
-fid=fopen(name_file,'r');
-ss=['opening file ',name_file];
+f_id=fopen(filename,'r');
+ss=['opening file ',filename];
 disp(ss);
-FRF='FRF';
-NONE='NONE';
-while feof(fid) ~= 1
-    valec=fscanf(fid,'%s',[1]);
-    if strcmp(FRF,valec) == 1;
+H_cols=[];
+ii=1;
+while feof(f_id) ~= 1
+    valec=fscanf(f_id,'%s',[1]);
+    if strcmp('FRF',valec)
         for vv=1:5
-            fgetl(fid);
+            fgetl(f_id);
         end
         % RECORD 6
-        valec=fscanf(fid,'%i',[4]);
-        valec=fscanf(fid,'%s',[1]);
-        resp_node=fscanf(fid,'%i',[1]);
-        resp_dir=fscanf(fid,'%i',[1]);
-        valec=fscanf(fid,'%s',[1]);
-        reference_node=fscanf(fid,'%i',[1]);
-        reference_dir=fscanf(fid,'%i',[1]);
+        valec=fscanf(f_id,'%i',[4]);
+        valec=fscanf(f_id,'%s',[1]);
+        resp_node=fscanf(f_id,'%i',[1]);
+        resp_dir=fscanf(f_id,'%i',[1]);
+        valec=fscanf(f_id,'%s',[1]);
+        reference_node=fscanf(f_id,'%i',[1]);
+        reference_dir=fscanf(f_id,'%i',[1]);
+        infoFRF(ii)=struct('response',resp_node,'dir_response',resp_dir,'excitation',reference_node,'dir_excitation',reference_dir);
         % RECORD 7
-        precision=fscanf(fid,'%i',[1]);
-        Nbr_data=fscanf(fid,'%i',[1]);
-        abscissa_spacing=fscanf(fid,'%i',[1]);
-        abscissa_minimum=fscanf(fid,'%g',[1]);
-        abscissa_increment=fscanf(fid,'%g',[1]);
-        valec=fscanf(fid,'%g',[1]);
+        precision=fscanf(f_id,'%i',[1]);
+        N=fscanf(f_id,'%i',[1]);
+        abscissa_spacing=fscanf(f_id,'%i',[1]);
+        abscissa_minimum=fscanf(f_id,'%g',[1]);
+        abscissa_increment=fscanf(f_id,'%g',[1]);
+        valec=fscanf(f_id,'%g',[1]);
         % RECORD 8
-        valec=fscanf(fid,'%i',[4]);
-        valec=fscanf(fid,'%s',[2]);
+        valec=fscanf(f_id,'%i',[4]);
+        valec=fscanf(f_id,'%s',[2]);
         % RECORD 9
-        valec=fscanf(fid,'%i',[4]);
-        valec=fscanf(fid,'%s',[2]);
+        valec=fscanf(f_id,'%i',[4]);
+        valec=fscanf(f_id,'%s',[2]);
         % RECORD 10
-        valec=fscanf(fid,'%i',[4]);
-        valec=fscanf(fid,'%s',[2]);
+        valec=fscanf(f_id,'%i',[4]);
+        valec=fscanf(f_id,'%s',[2]);
         % RECORD 11
-        valec=fscanf(fid,'%i',[4]);
-        valec=fscanf(fid,'%s',[2]);
+        valec=fscanf(f_id,'%i',[4]);
+        valec=fscanf(f_id,'%s',[2]);
         % RECORD 12
         if precision <= 4
             even=1;
         else
             even=2;
         end
-        temp=fscanf(fid,'%g',[Nbr_data*even]);  
-    end       
-end
-fclose(fid);
-N=length(temp);
-if even == 1
-    R=temp(1:N);
-    I=0;
-else
-    R=temp(1:even:N-1);
-    I=temp(2:even:N);
-end
-H=complex(R,I);
-ff=[abscissa_minimum:abscissa_increment:(Nbr_data-1)*abscissa_increment+abscissa_minimum];
-freq=ff';
-infoFRF=struct('response',resp_node,'dir_response',resp_dir,'excitation',reference_node,'dir_excitation',reference_dir);
+        temp=fscanf(f_id,'%g',N*even);
+        
+        if even == 1
+            R=temp(1:N);
+            I=0;
+        else
+            R=temp(1:even:even*N-1);
+            I=temp(2:even:even*N);
+        end
 
-% Changing sign if excitation or response direction are negative
-if infoFRF.dir_response < 0
-    infoFRF.dir_response=- infoFRF.dir_response;
-    H(:,ii)=- H(:,ii);
+        H_col_temp=complex(R,I);
+        % Changing sign if excitation or response direction are negative
+        if infoFRF(ii).dir_response < 0
+            infoFRF(ii).dir_response=-infoFRF(ii).dir_response;
+            H_col_temp=-H_col_temp;
+        end
+        if infoFRF(ii).dir_excitation < 0
+            infoFRF(ii).dir_excitation=-infoFRF(ii).dir_excitation;
+            H_col_temp=-H_col_temp;
+        end
+
+        H_cols=[H_cols,H_col_temp];
+        ii=ii+1;
+    end
 end
-if infoFRF.dir_excitation < 0
-    infoFRF.dir_excitation=- infoFRF.dir_excitation;
-    H(:,ii)=- H(:,ii);
-end
+fclose(f_id);
+
+f_col=(abscissa_minimum:abscissa_increment:(N-1)*abscissa_increment+abscissa_minimum)';

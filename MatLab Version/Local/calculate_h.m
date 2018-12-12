@@ -1,4 +1,4 @@
-function [h_cols,N_inp,N_out,N_t,D_t]=calculate_h(H_oneSided_cols,D_f,infoFRF)
+function [h_cols,N_inp,N_out,D_t]=calculate_h(H_oneSided_cols,D_f,infoFRF)
 
 [N_f_max,N_H]=size(H_oneSided_cols);
 N_t=2*N_f_max-2;

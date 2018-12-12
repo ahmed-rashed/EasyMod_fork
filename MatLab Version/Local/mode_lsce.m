@@ -1,4 +1,4 @@
-function [A_r_phys,w_n_r_phys,zeta_r_phys]=mode_lsce(h_cols,D_t,Z_col,N_modes,N_t)
+function [A_r_phys,w_n_r_phys,zeta_r_phys]=mode_lsce(h_cols,D_t,Z_col,N_modes)
  
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
@@ -7,6 +7,7 @@ function [A_r_phys,w_n_r_phys,zeta_r_phys]=mode_lsce(h_cols,D_t,Z_col,N_modes,N_
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS
 
+N_t=size(h_cols,1);
 if N_t<2*N_modes
     error('Number of samples insufficient for the requested number of modes!')
 end

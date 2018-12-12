@@ -1,4 +1,4 @@
-function [freq_local,H_local,H_gen_local,infoMODE,circ_prop]=circle_fit(H,freq,fmin,fmax);
+function [freq_local,H_local,H_gen_local,infoMODE,circ_prop]=circle_fit(H,freq,fmin,fmax)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  User function
@@ -103,7 +103,7 @@ else
      ss=find(delta==max(delta));
      kkk=find(ind_zero==ss);
   
-     % Natural frequency caractéristics
+     % Natural frequency caractï¿½ristics
      eig_theta=theta_r(kkk);
      eig_frequency=fr(kkk);
      wr=2*pi*eig_frequency;
