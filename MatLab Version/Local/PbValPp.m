@@ -1,5 +1,4 @@
-function [L,z_col]=PbValPp(beta_cols,N_inp,p)
-
+function [eigVec_up,eigVal_col]=PbValPp(Beta_T_transpose,N_inputs,p)
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
 %
@@ -7,47 +6,37 @@ function [L,z_col]=PbValPp(beta_cols,N_inp,p)
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS, Delphine LUPANT
 
+% (beta_{0} + z_col*beta_{1} +  ... + z_col^{p}*beta_{p})*L=0
 
-%  Necessary functions:
-%  -----------------------------------------------------------
-%  ppolyval.m
+% Building of two matrices p*N_inputs x p*N_inputs    %Maia equation (4.44)
+%    J=[beta0   0   0   0]   K=[-beta1 -beta2 -beta3 -beta4]
+%      [ 0   I   0   0]        [  I   0   0   0]
+%      [ 0   0   I   0]        [  0   I   0   0]
+%      [ 0   0   0   I]        [  0   0   I   0]
+J=eye(N_inputs*p);
+J(1:N_inputs,1:N_inputs)=Beta_T_transpose((p-1)*N_inputs+(1:N_inputs),:);
 
-
-% Extraction of coefficients A1,...,A_{p} of dimension (N_inp x N_inp)
-%   (A_{p} + z_col*A_{p-1} +  ... + z_col^{p-1}*A_{1}+z_col^{p})*L=0
-A=zeros(N_inp,N_inp,p);
-for j=1:p
-   A(:,:,j)=beta_cols((j-1)*N_inp+(1:N_inp),:);
-end
-
-% Transformation for solving the problem
-%   (B_{0} + z_col*B_{1} +  ... + z_col^{p}*B_{p})*L=0
-B=zeros(N_inp,N_inp,p+1);
-for i=1:p
-   B(:,:,i)=A(:,:,p-(i-1));
-end
-B(:,:,p+1)=eye(N_inp);
-
-% Building of two matrices p*N_inp x p*N_inp
-%    J=[B0   0   0   0]   K=[-B1 -B2 -B3 -B4]
-%      [ 0   I   0   0]     [  I   0   0   0]
-%      [ 0   0   I   0]     [  0   I   0   0]
-%      [ 0   0   0   I]     [  0   0   I   0]
-J=eye(N_inp*p);
-J(1:N_inp,1:N_inp)=B(:,:,1);
 if p == 0
-   K=eye(N_inp);
+   K=eye(N_inputs);
    p=1;
 else
-   K=diag(ones(N_inp*(p-1),1),-N_inp);
-   for k=1:p
-      K(1:N_inp,(k-1)*N_inp+1:k*N_inp)=-B(:,:,k+1);
+   K=diag(ones(N_inputs*(p-1),1),-N_inputs);
+   for jj=1:p-1
+      K(1:N_inputs,(jj-1)*N_inputs+(1:N_inputs))=-Beta_T_transpose((p-jj-1)*N_inputs+(1:N_inputs),:);
    end
+   K(1:N_inputs,(p-1)*N_inputs+(1:N_inputs))=-eye(N_inputs);
 end
 
-% Using ppolyval function
-[L,z_col]=ppolyval(J,K,N_inp,p);
+% Calculating eigenvalues
+[eigVal_mat,eigVec_full]=eig(J,K);
+eigVal_col=diag(eigVal_mat);
+EigValues_prec=eps*N_inputs*p*max(abs(eigVal_col));
+if any(abs(eigVal_col)<=EigValues_prec)
+    warning('Warning: Rank deficient generalized eigenvalue problem. Eigenvalues are not well determined. Results may be inaccurate.');
+end
+eigVec_up=eigVec_full(1:N_inputs,:);
+
 %Eigenvector scaling
-for k=1:size(L,2)
-   L(:,k)=L(:,k)/L(1,k);
+for k=1:size(eigVec_up,2)
+   eigVec_up(:,k)=eigVec_up(:,k)/eigVec_up(1,k);
 end

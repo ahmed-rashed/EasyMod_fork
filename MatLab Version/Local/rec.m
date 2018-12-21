@@ -1,5 +1,4 @@
 function [f_n_temp,zeta_temp,testzeta,FNMOD,ZETAMOD]=rec(f_n_r,zeta_r,N, f_max,f_n_temp,zeta_temp,testzeta,FNMOD,ZETAMOD,prec1,prec2)
-
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
 %
@@ -8,7 +7,7 @@ function [f_n_temp,zeta_temp,testzeta,FNMOD,ZETAMOD]=rec(f_n_r,zeta_r,N, f_max,f
 %
 %  Input data:
 %  f_n_r: natural frequency vector,
-%  zeta: damping vector,
+%  zeta_r: damping vector,
 %  N: number of mode in the current step,
 %  f_max: maximum freqneucy covered by the data (for directly eliminating the frequency out of range),
 %  f_n_temp: eigenvalue matrix obtained in the previous step,

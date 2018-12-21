@@ -1,14 +1,12 @@
 function p=modord(N,N_inp)
-
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
 %
 %  This function calculates the modal order p as a function of:
-%    - the number of modes (n),
-%    - the number of outputs (ni).
+%    - the number of modes (N),
+%    - the number of outputs (N_inp).
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS, Delphine LUPANT
-
 
 % Building of data matrix
 Ni0=(1:40).'; 

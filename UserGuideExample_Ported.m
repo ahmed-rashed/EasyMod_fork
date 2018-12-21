@@ -94,7 +94,9 @@ end
 % % unv55write(infoMODE2,'3DL_line_fit.unv',1);
 
 %% Least-square complex exponential
-[RES,infoMODE3]=lsce(Receptance_cols,f_col,infoFRF);
+Receptance_oneSided_cols=Receptance_cols; 
+Receptance_oneSided_cols(2:end,:)=2*Receptance_cols(2:end,:); 
+[RES,infoMODE3]=lsce(Receptance_oneSided_cols,f_col,infoFRF);
 
 % Results saving
 unv55write(infoMODE3,'3DL_LSCE.unv',1)
