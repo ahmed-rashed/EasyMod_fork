@@ -33,66 +33,64 @@ end
 [H31,f_col,infoFRF(3)]=unv58read('3DL_H31.unv');
 Accelerance_cols=[H11,H21,H31];
 
-% FRF Visualization
-figure;
-for ii=1:n_FRF
-    H_label=['\alpha_{',int2str(ii_row(ii)),int2str(jj_row(ii)),'}'];
-    ax_mag_h=subplot(4,n_FRF,ii);
-    ax_r=subplot(4,n_FRF,n_FRF+ii);
-    ax_i=subplot(4,n_FRF,2*n_FRF+ii);
-    plot_FRF_mag_phase(f_col,Accelerance_cols(:,ii),0,ax_mag_h,ax_r,'',H_label);
-    plot_FRF_r_i(f_col,Accelerance_cols(:,ii),ax_r,ax_i,'',H_label);
-    
-    subplot(4,n_FRF,3*n_FRF+ii);
-    plot_FRF_Nyq(Accelerance_cols(:,ii),[],H_label);
-end
-
-plot_ind_mode(Accelerance_cols,f_col);
-
-%% Circle-fit
-f_mode_min=[40 75 110];
-f_mode_max=[60 100 130];
-n_modes=length(f_mode_min);
-infoFRF1=infoFRF;
-for ii=1:n_FRF
-    for jj=1:n_modes
-        [freq_local,H_local,H_gen_local,infoMODE,circ_prop]=circle_fit(Accelerance_cols(:,ii),f_col,f_mode_min(jj),f_mode_max(jj));
-        plot_circle_fit(freq_local,H_local,H_gen_local,infoMODE,circ_prop);
-        infoFRF1(ii).infoMODE(jj)= infoMODE;
-    end
-end
-% Results saving
-infoMODE1=save_result_modal(infoFRF1);
-unv55write(infoMODE1,'3DL_circle_fit.unv',1);
-
-%% Line-fit
-ShowInternalDetails=true;
-n_FRF=size(Accelerance_cols,2);
-f_mode_min=[40 75 110];
-f_mode_max=[60 100 130];
-n_modes=length(f_mode_min);
-infoFRF2=infoFRF;
-for ii=1:n_FRF
-    for jj=1:n_modes
-        LocalZone_ind=find((f_col>=f_mode_min(jj)) & (f_col<=f_mode_max(jj)));
-        
-        H_local=Accelerance_cols(LocalZone_ind,ii);
-        [infoMODE,line_prop]=DobsonMethod(f_col(LocalZone_ind),Accelerance_cols(LocalZone_ind,ii),ShowInternalDetails);
-        H_gen_local=A_r./complex((2*pi*f_r)^2-(2*pi*f_col).^2,eta_r*(2*pi*f_r)^2);
-        %plot_line_fit(H_local,H_gen_local,infoMODE,line_prop);
-        infoFRF2(ii).infoMODE(jj)=infoMODE;
-    end
-end
-% Results saving
-infoMODE2=save_result_modal(infoFRF2);
-unv55write(infoMODE2,'3DL_line_fit.unv',1);
+% % FRF Visualization
+% figure;
+% for ii=1:n_FRF
+%     H_label=['\alpha_{',int2str(ii_row(ii)),int2str(jj_row(ii)),'}'];
+%     ax_mag_h=subplot(4,n_FRF,ii);
+%     ax_r=subplot(4,n_FRF,n_FRF+ii);
+%     ax_i=subplot(4,n_FRF,2*n_FRF+ii);
+%     plot_FRF_mag_phase(f_col,Accelerance_cols(:,ii),0,ax_mag_h,ax_r,'',H_label);
+%     plot_FRF_r_i(f_col,Accelerance_cols(:,ii),ax_r,ax_i,'',H_label);
+%     
+%     subplot(4,n_FRF,3*n_FRF+ii);
+%     plot_FRF_Nyq(Accelerance_cols(:,ii),[],H_label);
+% end
+% 
+% plot_ind_mode(Accelerance_cols,f_col);
+% 
+% %% Circle-fit
+% f_mode_min=[40 75 110];
+% f_mode_max=[60 100 130];
+% n_modes=length(f_mode_min);
+% infoFRF1=infoFRF;
+% for ii=1:n_FRF
+%     for jj=1:n_modes
+%         [freq_local,H_local,H_gen_local,infoMODE,circ_prop]=circle_fit(Accelerance_cols(:,ii),f_col,f_mode_min(jj),f_mode_max(jj));
+%         plot_circle_fit(freq_local,H_local,H_gen_local,infoMODE,circ_prop);
+%         infoFRF1(ii).infoMODE(jj)= infoMODE;
+%     end
+% end
+% % Results saving
+% infoMODE1=save_result_modal(infoFRF1);
+% unv55write(infoMODE1,'3DL_circle_fit.unv',1);
+% 
+% %% Line-fit
+% ShowInternalDetails=true;
+% n_FRF=size(Accelerance_cols,2);
+% f_mode_min=[40 75 110];
+% f_mode_max=[60 100 130];
+% n_modes=length(f_mode_min);
+% infoFRF2=infoFRF;
+% for ii=1:n_FRF
+%     for jj=1:n_modes
+%         LocalZone_ind=find((f_col>=f_mode_min(jj)) & (f_col<=f_mode_max(jj)));
+%         
+%         H_local=Accelerance_cols(LocalZone_ind,ii);
+%         [infoMODE,line_prop]=DobsonMethod(f_col(LocalZone_ind),Accelerance_cols(LocalZone_ind,ii),ShowInternalDetails);
+%         H_gen_local=A_r./complex((2*pi*f_r)^2-(2*pi*f_col).^2,eta_r*(2*pi*f_r)^2);
+%         %plot_line_fit(H_local,H_gen_local,infoMODE,line_prop);
+%         infoFRF2(ii).infoMODE(jj)=infoMODE;
+%     end
+% end
+% % Results saving
+% infoMODE2=save_result_modal(infoFRF2);
+% unv55write(infoMODE2,'3DL_line_fit.unv',1);
 
 %% Least-square complex exponential
 clc
 % check here; I think receptance should be used instead of accelerance
-Accelerance_oneSided_cols=Accelerance_cols;
-Accelerance_oneSided_cols(2:end,:)=2*Accelerance_cols(2:end,:);
-[RES,infoMODE3]=lsce(Accelerance_oneSided_cols,f_col,infoFRF);
+[RES,infoMODE3]=lsce(Accelerance_cols,f_col,infoFRF);
 
 % Results saving
 unv55write(infoMODE3,'3DL_LSCE.unv',1)

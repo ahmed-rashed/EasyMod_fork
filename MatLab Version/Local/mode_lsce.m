@@ -12,10 +12,10 @@ if N_t<2*N_modes
     error('Number of samples insufficient for the requested number of modes!')
 end
 
-ind=find(Z_col==0,1);
+ind=find(Z_col==0);
 V_r_col=Z_col(1:ind-1);
 
-lambda_r=log(V_r_col)./D_t;
+lambda_r=log(V_r_col)/D_t;
 w_d_r=imag(lambda_r); 
 delta_r=real(lambda_r); 
 w_n_r=sqrt(w_d_r.^2+delta_r.^2); 

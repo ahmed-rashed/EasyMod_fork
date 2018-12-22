@@ -1,4 +1,4 @@
-function stabdiag(ftemp,xitemp,testxi,FMAX,MaxMod,H_cols,f)
+function stabdiag(f_r_temp,test_zeta,N_modes,H_oneSided_cols,f_col)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
@@ -6,77 +6,53 @@ function stabdiag(ftemp,xitemp,testxi,FMAX,MaxMod,H_cols,f)
 %  This function displays the stabilization chart.
 %
 %  Input data:
-%  ftemp: updated eigenvalue matrix,
-%  xitemp: updated damping matrix,
-%  testxi: updated test matrix,
-%  FMAX: maximum freqneucy covered by the data,
-%  MaxMod: maximum number of modes to calculate in the iterations,
-%  H_cols: FRF matrix,
-%  f: frequency vector.
+%  f_r_temp: updated eigenvalue matrix,
+%  test_zeta: updated test matrix,
+%  N_modes: maximum number of modes to calculate in the iterations,
+%  H_oneSided_cols: FRF matrix,
+%  f_col: frequency vector.
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS, Delphine LUPANT
 
-
-N=1;
-y=N;
-
-figure;
-subplot(2,1,1);
-plot(ftemp(:,N),y,'o b');
-title('Stabilization diagram');
-xlabel('Frequency  [Hz]');
-ylabel('Number of modes');
-% axis([0 max(f) 0 MaxMod]);
-grid on;
-hold on;
-I=size(ftemp,1);
-
 % Displaying one FRF on the chart
-HdB=abs(H_cols(:,1));
-facteur=max(HdB);
-HdB1=HdB/facteur*(MaxMod-1);
-% hold on;
-plot(f,HdB1,'m');
-n=0;
-f=0;
-d=0;
-for N=2:MaxMod
-   % Each frequency i of line N
-   for i=1:I
-      if ftemp(i,N) == 0
-      else
-         if ftemp(i,N-1) == 0
-            % First time frequency
-            y=N;
-            n=n+1;
-            hold on;
-            plot_n=plot(ftemp(i,N),y,'b o');
-        else
-            % At least second time frequency
-            % --> stabilized frequency
-            if testxi(i,N) == 0
-               % First time damping
-               y=N ;
-               f=f+1;
-               hold on;
-               plot_f=plot(ftemp(i,N),y,'g +');
-           else
-               % At least second time damping
-               % --> stabilized frequency and damping
-               y = N;
-               d = d+1;
-               hold on;
-               plot_d=plot(ftemp(i,N),y,'r *');
-           end
-         end
-      end
-   end
+yyaxis right
+handle=plot(f_col,abs(H_oneSided_cols(:,1)));
+set(get(get(handle,'Annotation'),'LegendInformation'),'IconDisplayStyle','off'); % Exclude line from legend
+ylabel('$|\alpha(f)|$','interpreter','latex');
+
+yyaxis left
+n_mode=1;
+plot_n=plot(f_r_temp(1,n_mode),n_mode,'b o','DisplayName','New mode');
+hold on;
+for n_mode=2:N_modes
+    for i_f_r_temp=1:size(f_r_temp,1)    % Each frequency i of line n_mode
+        if f_r_temp(i_f_r_temp,n_mode)==0
+            continue
+        elseif f_r_temp(i_f_r_temp,n_mode-1)==0  % First time frequency --> New mode
+            plot_n.XData=[plot_n.XData,f_r_temp(i_f_r_temp,n_mode)];
+            plot_n.YData=[plot_n.YData,n_mode];
+        else    % Successive to first time frequency --> frequency already stabilized
+            if test_zeta(i_f_r_temp,n_mode)==0    % First damping
+                if ~exist('plot_f','var')
+                    plot_f=plot(f_r_temp(i_f_r_temp,n_mode),n_mode,'g +','DisplayName','frequency stabilized');
+                else
+                    plot_f.XData=[plot_f.XData,f_r_temp(i_f_r_temp,n_mode)];
+                    plot_f.YData=[plot_f.YData,n_mode];
+                end
+            else % Successive to first damping --> stabilized frequency and damping
+                if ~exist('plot_f_zeta','var')
+                    plot_f_zeta=plot(f_r_temp(i_f_r_temp,n_mode),n_mode,'r *','DisplayName','frequency & damping stabilized');
+                else
+                    plot_f_zeta.XData=[plot_f_zeta.XData,f_r_temp(i_f_r_temp,n_mode)];
+                    plot_f_zeta.YData=[plot_f_zeta.YData,n_mode];
+                end
+            end
+        end
+    end
 end
 
-if exist('plot_d','var') 
-    legend_plot=[plot_n(1);plot_f(1);plot_d(1)];
-    legend(legend_plot,' new mode',' frequency stabilization',' frequency - damping stabilization','Location','SouthEast');
-else
-    legend_plot=[plot_n(1);plot_f(1)];
-    legend(legend_plot,' new mode',' frequency stabilization','Location','SouthEast');
-end
+title('Stabilization diagram');
+xlabel('$f$ (Hz)','interpreter','latex');
+ylabel('Number of expected modes');
+grid on;
+legend('show')

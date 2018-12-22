@@ -13,6 +13,11 @@ function [eigVec_up,eigVal_col]=PbValPp(Beta_T_transpose,N_inputs,p)
 %      [ 0   I   0   0]        [  I   0   0   0]
 %      [ 0   0   I   0]        [  0   I   0   0]
 %      [ 0   0   0   I]        [  0   0   I   0]
+
+% By Ahmed Rashed
+%This file seems to intentionally confuse readers of the code
+
+
 J=eye(N_inputs*p);
 J(1:N_inputs,1:N_inputs)=Beta_T_transpose((p-1)*N_inputs+(1:N_inputs),:);
 
@@ -28,8 +33,13 @@ else
 end
 
 % Calculating eigenvalues
-[eigVal_mat,eigVec_full]=eig(J,K);
+[eigVec_full,eigVal_mat]=eig(J,K);
 eigVal_col=diag(eigVal_mat);
+
+[~,Index]=sort(abs(imag(eigVal_col)));
+eigVal_col=eigVal_col(Index);
+eigVec_full=eigVec_full(:,Index);
+
 EigValues_prec=eps*N_inputs*p*max(abs(eigVal_col));
 if any(abs(eigVal_col)<=EigValues_prec)
     warning('Warning: Rank deficient generalized eigenvalue problem. Eigenvalues are not well determined. Results may be inaccurate.');
