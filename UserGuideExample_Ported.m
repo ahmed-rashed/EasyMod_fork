@@ -4,7 +4,7 @@ clc
 
 % Model parameters:
 M=[1 0 0; 0 1 0; 0 0 1];
-C=[40 0 0; 0 40 0; 0 0 40];
+C=[40 0 0; 0 40 0; 0 0 40]/10;
 K=[237315 -161000 0; -161000 398315 -161000; 0 -161000 398315];
 
 % FRF storage
@@ -18,8 +18,12 @@ ii_row=[1,1,1];
 jj_row=[1,2,3];
 n_FRF=length(ii_row);
 
-[EigVectors_Normalized, EigValues_mat]=MDOF_Eig_Visc(M, C, K);
-Receptance_cols=MDOF_FRF_Visc(EigValues_mat, EigVectors_Normalized, 2*pi*f_col, ii_row, jj_row);
+[EigVectors_Normalized,EigValues_vec]=MDOF_Eig_Visc(M, C, K);
+Receptance_cols=MDOF_FRF_Visc(EigValues_vec, EigVectors_Normalized, 2*pi*f_col, ii_row, jj_row);
+[w_r_col,zeta_r_col]=MDOF_Modal_Param_Visc(EigValues_vec);
+f_r_col=w_r_col/2/pi
+zeta_r_col
+
 for ii=1:n_FRF
     infoFRF(ii).response=ii;
     infoFRF(ii).dir_response=3;
@@ -94,9 +98,7 @@ end
 % % unv55write(infoMODE2,'3DL_line_fit.unv',1);
 
 %% Least-square complex exponential
-Receptance_oneSided_cols=Receptance_cols; 
-Receptance_oneSided_cols(2:end,:)=2*Receptance_cols(2:end,:); 
-[RES,infoMODE3]=lsce(Receptance_oneSided_cols,f_col,infoFRF);
+[RES,infoMODE3]=lsce(Receptance_cols,f_col,infoFRF);
 
-% Results saving
-unv55write(infoMODE3,'3DL_LSCE.unv',1)
+% % Results saving
+% unv55write(infoMODE3,'3DL_LSCE.unv',1)

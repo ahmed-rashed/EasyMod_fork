@@ -1,4 +1,4 @@
-function [A_r_phys,w_n_r_phys,zeta_r_phys]=mode_lsce(h_cols,D_t,Z_col,N_modes)
+function [A_r,w_r_col,zeta_r_col]=mode_lsce(h_cols,D_t,Z_col,N_modes)
  
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
@@ -7,43 +7,39 @@ function [A_r_phys,w_n_r_phys,zeta_r_phys]=mode_lsce(h_cols,D_t,Z_col,N_modes)
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS
 
-N_t=size(h_cols,1);
+[N_t,N_outputs]=size(h_cols); 
+N_inputs=floor(N_t/N_t); %Bug is here
 if N_t<2*N_modes
     error('Number of samples insufficient for the requested number of modes!')
 end
 
-ind=find(Z_col==0);
-V_r_col=Z_col(1:ind-1);
+lambda_r_col=log(Z_col)/D_t;
+w_d_r_col_temp=imag(lambda_r_col); 
+delta_r_col_temp=real(lambda_r_col); 
+w_r_col_temp=sqrt(w_d_r_col_temp.^2+delta_r_col_temp.^2); 
+zeta_r_col_temp=-(delta_r_col_temp./w_r_col_temp);
 
-lambda_r=log(V_r_col)/D_t;
-w_d_r=imag(lambda_r); 
-delta_r=real(lambda_r); 
-w_n_r=sqrt(w_d_r.^2+delta_r.^2); 
-zeta_r=-(delta_r./w_n_r);
+[w_r_col_temp,i_sort]=sort(w_r_col_temp);
+Z_col=Z_col(i_sort);
+zeta_r_col_temp=zeta_r_col_temp(i_sort);
 
-[w_n_r,i_sort]=sort(w_n_r/2/pi);
-V_r_col=V_r_col(i_sort);
-zeta_r=zeta_r(i_sort);
+% Extracting the physical modes (frequencies which appear in pairs)
+[w_r_col,i_w_n_r]=uniquetol(w_r_col_temp,eps*1e3*max(abs(w_r_col_temp)));
+zeta_r_col=zeta_r_col_temp(i_w_n_r);
 
-% Solving equation V_mat * A_r_temp= h [Maia, eqn 4.14]
-V_mat=zeros(2*N_modes,2*N_modes); 
-for ii=1:2*N_modes
-    V_mat(ii,:)=V_r_col(1:2*N_modes).'.^(ii-1); 
+% Solving equation W_V_mat * A_r_temp= h [Maia, eqn (4.48) or (4.14)]
+W_V_mat=zeros(2*N_modes,2*N_modes); 
+for n_mode=1:2*N_modes
+    W_V_mat(n_mode,:)=Z_col(1:2*N_modes).'.^(n_mode-1); %This is bug
 end
 
-[L,N_out]=size(h_cols); 
-Ni=floor(L/N_t);
-A_r=nan(2*N_modes,N_out);
-for ind=1:N_out
-    A_r_temp=zeros(2*N_modes,Ni);
-    for ind2=1:Ni
-        A_r_temp(:,ind2)=V_mat\h_cols(N_t*(ind2-1)+(1:2*N_modes),ind);
+A_r_temp1=nan(2*N_modes,N_outputs);
+for n_out=1:N_outputs
+    A_r_temp2=zeros(2*N_modes,N_inputs);
+    for n_input=1:N_inputs
+        A_r_temp2(:,n_input)=W_V_mat\h_cols(N_t*(n_input-1)+(1:2*N_modes),n_out);  %[Maia, eqn (4.48) or (4.14)]
     end
-    A_r(:,ind)=mean(A_r_temp,2);
-    A_r(:,ind)=A_r(:,ind)/A_r(1,ind);   % Eigenvector normalization
+    A_r_temp1(:,n_out)=mean(A_r_temp2,2);
+    A_r_temp1(:,n_out)=A_r_temp1(:,n_out)/A_r_temp1(1,n_out);   % Eigenvector normalization
 end
-
-% Extracting the physical modes (frequencies which appear two times)
-[w_n_r_phys,i_w_n_r]=uniquetol(w_n_r,1e-8*2*pi/max(abs(w_n_r)));
-zeta_r_phys=zeta_r(i_w_n_r);
-A_r_phys=A_r(i_w_n_r,:);
+A_r=A_r_temp1(i_w_n_r,:);

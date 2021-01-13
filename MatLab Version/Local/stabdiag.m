@@ -1,4 +1,4 @@
-function stabdiag(f_r_temp,test_zeta,N_modes,H_oneSided_cols,f_col)
+function stabdiag(f_r_temp,bDampingFreq_Stabilized,N_modes,H_oneSided_cols,f_col)
 
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
@@ -7,7 +7,7 @@ function stabdiag(f_r_temp,test_zeta,N_modes,H_oneSided_cols,f_col)
 %
 %  Input data:
 %  f_r_temp: updated eigenvalue matrix,
-%  test_zeta: updated test matrix,
+%  bDampingFreq_Stabilized: updated test matrix,
 %  N_modes: maximum number of modes to calculate in the iterations,
 %  H_oneSided_cols: FRF matrix,
 %  f_col: frequency vector.
@@ -32,7 +32,7 @@ for n_mode=2:N_modes
             plot_n.XData=[plot_n.XData,f_r_temp(i_f_r_temp,n_mode)];
             plot_n.YData=[plot_n.YData,n_mode];
         else    % Successive to first time frequency --> frequency already stabilized
-            if test_zeta(i_f_r_temp,n_mode)==0    % First damping
+            if bDampingFreq_Stabilized(i_f_r_temp,n_mode)==0    % First damping
                 if ~exist('plot_f','var')
                     plot_f=plot(f_r_temp(i_f_r_temp,n_mode),n_mode,'g +','DisplayName','frequency stabilized');
                 else
