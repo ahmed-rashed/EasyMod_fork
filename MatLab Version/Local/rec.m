@@ -1,4 +1,4 @@
-function [f_r_temp,zeta_r_temp,bDampingFreq_Stabilized,f_r_mod,zeta_mod]=rec(f_r_col,zeta_r_col,n_mode,f_max,f_r_temp,zeta_r_temp,bDampingFreq_Stabilized,f_r_mod,zeta_mod,prec1,prec2)
+function [f_r_temp,zeta_r_temp,bDampingFreq_Stabilized]=rec(f_r_col,zeta_r_col,n_mode,f_max,f_r_temp,zeta_r_temp,bDampingFreq_Stabilized,prec1,prec2)
 %  This function applies the comparison between the frequency and damping
 %  values obtained in the current step and the ones of the previous step
 %
@@ -7,10 +7,6 @@ function [f_r_temp,zeta_r_temp,bDampingFreq_Stabilized,f_r_mod,zeta_mod]=rec(f_r
 %  zeta_r_col: damping vector,
 %  n_mode: number of mode in the current step,
 %  f_max: maximum freqneucy covered by the data (for directly eliminating the frequency out of range),
-%  f_r_temp: eigenvalue matrix obtained in the previous step,
-%  zeta_r_temp: damping matrix obtained in the previous step,
-%  f_r_mod: matrix where frequency values are saved before comparison,
-%  zeta_mod: matrix where damping values are saved before comparison,
 %  prec1: tolerance in frequency,
 %  prec2: tolerance in damping.
 %
@@ -18,7 +14,6 @@ function [f_r_temp,zeta_r_temp,bDampingFreq_Stabilized,f_r_mod,zeta_mod]=rec(f_r
 %  f_r_temp: updated eigenvalue matrix,
 %  zeta_r_temp: updated damping matrix,
 %  bDampingFreq_Stabilized: test matrix,
-%  f_r_mod and zeta_mod: updated matrices.
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS, Delphine LUPANT
 
@@ -26,8 +21,6 @@ function [f_r_temp,zeta_r_temp,bDampingFreq_Stabilized,f_r_mod,zeta_mod]=rec(f_r
 [f_r_unique,i_f_r_unique]=uniquetol(f_r_col,1e-7/max(abs(f_r_col)));
 zeta_r_unique=zeta_r_col(i_f_r_unique);
 N_f_r_unique=length(f_r_unique);
-f_r_mod(1:N_f_r_unique,n_mode)=f_r_unique;
-zeta_mod(1:N_f_r_unique,n_mode)=zeta_r_unique;
 
 if n_mode==1    % first step
    f_r_temp(1:N_f_r_unique,1)=f_r_unique;
@@ -42,12 +35,12 @@ else    % Next steps are identical
          test_vec=(abs(f_r_unique(n_f_r_unique)-f_r_temp(ind_vec,n_mode-1))./f_r_temp(ind_vec,n_mode-1)) < prec1;
          ind1_vec=find(test_vec);
          nn=length(ind1_vec);
-         if nn==0  % Otherwise, f_r_mod(n_f_r_unique) does not correspond to any frequency already obtained.
+         if nn==0  % Otherwise, f_r_unique(n_f_r_unique) does not correspond to any frequency already obtained.
             ind_max=ind_max+1;
             f_r_temp   (ind_max,n_mode)=f_r_unique(n_f_r_unique);
             zeta_r_temp(ind_max,n_mode)=zeta_r_unique(n_f_r_unique);
-            bDampingFreq_Stabilized  (ind_max,n_mode)=false;
-         elseif nn==1   % f_r_mod(n_f_r_unique) correspond to one of the frequencies already obtained.
+            bDampingFreq_Stabilized(ind_max,n_mode)=false;
+         elseif nn==1   % f_r_unique(n_f_r_unique) correspond to one of the frequencies already obtained.
             % --> n_f_r_unique means is performed
             % --> value is stored in f_r_temp  at the line of the corresponding frequency
             j_vec=ind_vec(ind1_vec);
@@ -59,8 +52,8 @@ else    % Next steps are identical
             else
                zeta_r_temp(j_vec,n_mode)=zeta_r_unique(n_f_r_unique);
             end
-         elseif nn > 1  % f_r_mod(n_f_r_unique) correspond to the frequencies already obtained.
-            % --> we look for which f_r_mod(n_f_r_unique) is closer
+         elseif nn > 1  % f_r_unique(n_f_r_unique) correspond to the frequencies already obtained.
+            % --> we look for which f_r_unique(n_f_r_unique) is closer
             % --> n_f_r_unique means is performed
             % --> value is stored in f_r_temp  at the line of the corresponding frequency
             comp=abs(f_r_unique(n_f_r_unique)-f_r_temp(ind_vec(ind1_vec),n_mode-1));

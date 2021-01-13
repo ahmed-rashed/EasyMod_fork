@@ -87,11 +87,9 @@ prec2_percent=prec2/100;
 Z=cell(N_modes_expected-1,1);
 
 % Definition of matrices allowed from the comparison results at each step
-f_r_temp=zeros(2*N_modes_expected,N_modes_expected-1);
-f_r_mod=zeros(2*N_modes_expected,N_modes_expected-1);
-zeta_mod=zeros(2*N_modes_expected,N_modes_expected-1);
-zeta_r_temp=zeros(2*N_modes_expected,N_modes_expected-1);
-bDampingFreq_Stabilized=zeros(2*N_modes_expected,N_modes_expected-1);
+f_r_temp=zeros(2*N_modes_expected,N_modes_expected);
+zeta_r_temp=zeros(2*N_modes_expected,N_modes_expected);
+bDampingFreq_Stabilized=false(2*N_modes_expected,N_modes_expected);
 
 InvConditionNumber=zeros(1,N_modes_expected);
 % err=zeros(1,N_modes_expected);
@@ -131,7 +129,7 @@ for n_mode=1:N_modes_expected
     
 
     % Stabilization validation (frequency and damping)
-    [f_r_temp,zeta_r_temp,bDampingFreq_Stabilized,f_r_mod,zeta_mod]=rec(w_r_col/(2*pi),zeta_r_col,n_mode,f_max,f_r_temp,zeta_r_temp,bDampingFreq_Stabilized,f_r_mod,zeta_mod,prec1_percent,prec2_percent);
+    [f_r_temp,zeta_r_temp,bDampingFreq_Stabilized]=rec(w_r_col/(2*pi),zeta_r_col,n_mode,f_max,f_r_temp,zeta_r_temp,bDampingFreq_Stabilized,prec1_percent,prec2_percent);
     % Data saving
     Z{n_mode}=V_r_col;
 end
@@ -168,7 +166,7 @@ end
 ind=find((f_r_temp(:,N_modes)~=0) & (f_r_temp(:,N_modes-1)~=0));
 lsce_result=[f_r_temp(ind,N_modes) zeta_r_temp(ind,N_modes) bDampingFreq_Stabilized(ind,N_modes)];
 
-disp('Interpretation  stabilization state:');
+disp('Interpretation of stabilization state:');
 disp('1 : if damping stabilization');
 disp('0 : if frequency only stabilization');
 disp('     f_n        zeta   stabilization state');
