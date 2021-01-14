@@ -123,7 +123,7 @@ for n_mode=1:N_modes_expected
     
 
     % Stabilization validation (frequency and damping)
-    [f_r_temp,zeta_r_temp,bDampingFreq_Stabilized]=rec(w_r_col/(2*pi),zeta_r_col,n_mode,f_max,f_r_temp,zeta_r_temp,bDampingFreq_Stabilized,prec1_percent,prec2_percent);
+    [f_r_temp(:,n_mode),zeta_r_temp(:,n_mode),bDampingFreq_Stabilized(:,n_mode)]=rec(w_r_col/(2*pi),zeta_r_col,n_mode,f_max,f_r_temp(:,n_mode-1),zeta_r_temp(:,n_mode-1),prec1_percent,prec2_percent);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -147,15 +147,19 @@ xlabel('Number of expected modes');
 grid on;
 
 % Selection of the model size
-N_modes=input('Based on the figures, select the number of modes (defult is the number of iterations):\n');
+N_modes=input('Based on the figures, select the number of modes: (defult is the number of iterations)\n');
 if isempty(N_modes)
     N_modes=N_modes_expected;
+else
+    if N_modes>N_modes_expected
+        error('Number of modes cannot exceed the number of iterations.')
+    end
 end
 
 %warning off
 
 % Results statement
-ind=find((f_r_temp(:,N_modes)~=0) & (f_r_temp(:,N_modes-1)~=0));
+ind=find(all(f_r_temp(:,N_modes-1:N_modes)~=0,2));
 lsce_result=[f_r_temp(ind,N_modes) zeta_r_temp(ind,N_modes) bDampingFreq_Stabilized(ind,N_modes)];
 
 disp('Interpretation of stabilization state:');
