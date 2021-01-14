@@ -87,9 +87,8 @@ prec2_percent=prec2/100;
 Z=cell(N_modes_expected-1,1);
 
 % Definition of matrices allowed from the comparison results at each step
-f_r_temp=zeros(2*N_modes_expected,N_modes_expected);
-zeta_r_temp=zeros(2*N_modes_expected,N_modes_expected);
-bDampingFreq_Stabilized=false(2*N_modes_expected,N_modes_expected);
+f_r_temp_old=nan(2*N_modes_expected,1);
+zeta_r_temp_old=f_r_temp_old;
 
 InvConditionNumber=zeros(1,N_modes_expected);
 % err=zeros(1,N_modes_expected);
@@ -117,7 +116,7 @@ for n_mode=1:N_modes_expected
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Eigenvalue problem solving
-    [Z_cols,V_r_col]=PbValPp(Beta_T_transpose,N_inputs,p);
+    [~,V_r_col]=PbValPp(Beta_T_transpose,N_inputs,p);
 
     % Modal parameters extraction
     lambda_r_col=log(V_r_col)/D_t;
@@ -129,7 +128,7 @@ for n_mode=1:N_modes_expected
     
 
     % Stabilization validation (frequency and damping)
-    [f_r_temp,zeta_r_temp,bDampingFreq_Stabilized]=rec(w_r_col/(2*pi),zeta_r_col,n_mode,f_max,f_r_temp,zeta_r_temp,bDampingFreq_Stabilized,prec1_percent,prec2_percent);
+    [f_r_temp_new,zeta_r_temp_new,bDampingFreq_Stabilized_new]=rec(w_r_col/(2*pi),zeta_r_col,f_max,f_r_temp_old,zeta_r_temp_old,prec1_percent,prec2_percent);
     % Data saving
     Z{n_mode}=V_r_col;
 end
@@ -138,7 +137,7 @@ end
 % Stabilization chart
 figure;
 subplot(2,1,1);
-stabdiag(f_r_temp,bDampingFreq_Stabilized,N_modes_expected,Receptance_cols,f_col);
+stabdiag(f_r_temp_new,f_r_temp_old,bDampingFreq_Stabilized_new,N_modes_expected,Receptance_cols,f_col);
 
 % Least squares error chart visualization
 subplot(2,1,2);
@@ -163,8 +162,8 @@ end
 %warning off
 
 % Results statement
-ind=find((f_r_temp(:,N_modes)~=0) & (f_r_temp(:,N_modes-1)~=0));
-lsce_result=[f_r_temp(ind,N_modes) zeta_r_temp(ind,N_modes) bDampingFreq_Stabilized(ind,N_modes)];
+ind=find((f_r_temp_old~=0) & (f_r_temp_new~=0));
+lsce_result=[f_r_temp_new(ind) zeta_r_temp_new(ind) bDampingFreq_Stabilized_new(ind)];
 
 disp('Interpretation of stabilization state:');
 disp('1 : if damping stabilization');
