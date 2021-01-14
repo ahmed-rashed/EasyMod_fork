@@ -1,5 +1,6 @@
 function [lsce_result,infoMODE]=lsce(Receptance_cols,f_col,infoFRF)
-
+%Modifications by Ahmed Rashed
+%
 % ------------------   This file is part of EasyMod   ----------------------------
 %  User function
 %
@@ -61,32 +62,25 @@ D_f=f_col(2)-f_col(1);
 h_cols=ifft(Receptance_cols,N_t,1,'symmetric')*N_t; % impulse response functions
 
 % Maximum iteration
-N_modes_expected=input('Model order (number of expected modes) (defaults: 10):\n');    %Number of modes
+N_modes_expected=input('Model order (number of expected modes) (defaults: 10):\n');
 if isempty(N_modes_expected)
     N_modes_expected=10;
 end
 
 % The tolerance in frequency
-%%%%%%%%%%%%%%Modifications by Ahmed Rashed
-prec1=input('Tolerance (%) in frequency (defaults: 1%):\n');
-if isempty(prec1)
-    prec1=1;
+prec1_percent=input('Tolerance (%) in frequency (defaults: 1%):\n')/100;
+if isempty(prec1_percent)
+    prec1_percent=1/100;
 end
-prec1_percent=prec1/100;
 
 
 % The tolerance in damping
-%%%%%%%%%%%%%%Modifications by Ahmed Rashed
-prec2=input('Tolerance (%) in damping (defaults: 1%):\n');
-if isempty(prec2)
-    prec2=1;
+prec2_percent=input('Tolerance (%) in damping (defaults: 1%):\n')/100;
+if isempty(prec2_percent)
+    prec2_percent=1/100;
 end
-prec2_percent=prec2/100;
 
-% Definition of matrices allowed from the modal parameters at each step
-Z=cell(N_modes_expected-1,1);
-
-% Definition of matrices allowed from the comparison results at each step
+% Matrices for comparing results at each step
 f_r_temp=zeros(2*N_modes_expected,N_modes_expected);
 zeta_r_temp=zeros(2*N_modes_expected,N_modes_expected);
 bDampingFreq_Stabilized=false(2*N_modes_expected,N_modes_expected);
@@ -117,7 +111,7 @@ for n_mode=1:N_modes_expected
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Eigenvalue problem solving
-    [Z_cols,V_r_col]=PbValPp(Beta_T_transpose,N_inputs,p);
+    [~,V_r_col]=PbValPp(Beta_T_transpose,N_inputs,p);
 
     % Modal parameters extraction
     lambda_r_col=log(V_r_col)/D_t;
@@ -130,8 +124,6 @@ for n_mode=1:N_modes_expected
 
     % Stabilization validation (frequency and damping)
     [f_r_temp,zeta_r_temp,bDampingFreq_Stabilized]=rec(w_r_col/(2*pi),zeta_r_col,n_mode,f_max,f_r_temp,zeta_r_temp,bDampingFreq_Stabilized,prec1_percent,prec2_percent);
-    % Data saving
-    Z{n_mode}=V_r_col;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -173,5 +165,5 @@ disp('     f_n        zeta   stabilization state');
 disp(lsce_result);
 
 % Mode shape extraction
-[A_r_phys,w_n_r_phys,zeta_r_phys]=mode_lsce(h_cols,D_t,Z{N_modes},N_modes);
+[A_r_phys,w_n_r_phys,zeta_r_phys]=mode_lsce(h_cols,D_t,V_r_col,N_modes);
 infoMODE=mode_stab(infoFRF,A_r_phys,w_n_r_phys/2/pi,zeta_r_phys,lsce_result,prec1_percent,prec2_percent);
