@@ -1,58 +1,50 @@
-function stabdiag(f_r_temp,bDampingFreq_Stabilized,N_modes,H_oneSided_cols,f_col)
+function stabdiag(f_r_mat,f_r_stabilized_mat,f_zeta_r_stabilized_mat,Receptance_cols,f_col,leastSquareError,InvConditionNumber)
+% Created by Ahmed Rashed
 
-% ------------------   This file is part of EasyMod   ----------------------------
-%  Internal function
-%
-%  This function displays the stabilization chart.
-%
-%  Input data:
-%  f_r_temp: updated eigenvalue matrix,
-%  bDampingFreq_Stabilized: updated test matrix,
-%  N_modes: maximum number of modes to calculate in the iterations,
-%  H_oneSided_cols: FRF matrix,
-%  f_col: frequency vector.
-%
-% Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS, Delphine LUPANT
+if any(size(f_r_mat)~=size(f_r_stabilized_mat)),error('f_r_mat and f_r_stabilized_mat must have the same size'),end
+if any(size(f_r_mat)~=size(f_zeta_r_stabilized_mat)),error('f_r_mat and f_r_stabilized_mat must have the same size'),end
 
-% Displaying one FRF on the chart
-yyaxis right
-handle=plot(f_col,abs(H_oneSided_cols(:,1)));
-set(get(get(handle,'Annotation'),'LegendInformation'),'IconDisplayStyle','off'); % Exclude line from legend
-ylabel('$|\alpha(f)|$','interpreter','latex');
+N_modes=size(f_r_mat,2);
+n_mode_row=(1:N_modes);
+n_mode_mat=ones(size(f_r_mat,1),1)*n_mode_row;
 
+figure;
+axesColorRoder=colororder;
+
+subplot(1,5,2:5);
 yyaxis left
-n_mode=1;
-plot_n=plot(f_r_temp(1,n_mode),n_mode,'b o','DisplayName','New mode');
-hold on;
-for n_mode=2:N_modes
-    for i_f_r_temp=1:size(f_r_temp,1)    % Each frequency i of line n_mode
-        if f_r_temp(i_f_r_temp,n_mode)==0
-            continue
-        elseif f_r_temp(i_f_r_temp,n_mode-1)==0  % First time frequency --> New mode
-            plot_n.XData=[plot_n.XData,f_r_temp(i_f_r_temp,n_mode)];
-            plot_n.YData=[plot_n.YData,n_mode];
-        else    % Successive to first time frequency --> frequency already stabilized
-            if bDampingFreq_Stabilized(i_f_r_temp,n_mode)==0    % First damping
-                if ~exist('plot_f','var')
-                    plot_f=plot(f_r_temp(i_f_r_temp,n_mode),n_mode,'g +','DisplayName','frequency stabilized');
-                else
-                    plot_f.XData=[plot_f.XData,f_r_temp(i_f_r_temp,n_mode)];
-                    plot_f.YData=[plot_f.YData,n_mode];
-                end
-            else % Successive to first damping --> stabilized frequency and damping
-                if ~exist('plot_f_zeta','var')
-                    plot_f_zeta=plot(f_r_temp(i_f_r_temp,n_mode),n_mode,'r *','DisplayName','frequency & damping stabilized');
-                else
-                    plot_f_zeta.XData=[plot_f_zeta.XData,f_r_temp(i_f_r_temp,n_mode)];
-                    plot_f_zeta.YData=[plot_f_zeta.YData,n_mode];
-                end
-            end
-        end
-    end
-end
+ind_f_zeta_r_stabilized_col=find(f_zeta_r_stabilized_mat);
+plot(f_r_mat(ind_f_zeta_r_stabilized_col),n_mode_mat(ind_f_zeta_r_stabilized_col),'+','Color',axesColorRoder(1,:),'DisplayName','Stable in frequency \& damping');
+hold on
+
+ind_f_r_stabilized_col=find(f_r_stabilized_mat);
+ind_f_r_stabilized_only_col=setdiff(ind_f_r_stabilized_col,ind_f_zeta_r_stabilized_col);
+plot(f_r_mat(ind_f_r_stabilized_only_col),n_mode_mat(ind_f_r_stabilized_only_col),'o','Color',axesColorRoder(1,:),'DisplayName','Stable in frequency');
+
+ind_f_r_not_stabilized_col=setdiff(find(~isnan(f_r_mat)),ind_f_r_stabilized_col);
+plot(f_r_mat(ind_f_r_not_stabilized_col),n_mode_mat(ind_f_r_not_stabilized_col),'.','Color',axesColorRoder(1,:),'DisplayName','Not stable in frequency');
+hold off
+
+N_modes_lim=[0,1.05*N_modes];
+set(gca,'YTickLabel',[],'YLim',N_modes_lim);
+
+yyaxis right
+semilogy(f_col,sum(abs(Receptance_cols),2),'DisplayName','$\sum\left|\alpha\left(f\right)\right|$');
+ylabel('$\sum\left|\alpha\left(f\right)\right|$','interpreter','latex');
 
 title('Stabilization diagram');
 xlabel('$f$ (Hz)','interpreter','latex');
-ylabel('Number of expected modes');
 grid on;
-legend('show')
+legend('show','interpreter','latex')
+
+
+ax1=subplot(1,5,1,'XColor',axesColorRoder(3,:),'YColor',axesColorRoder(1,:),'NextPlot','add','YGrid','on','XScale','log');
+plot(leastSquareError,n_mode_row,'.-','color',axesColorRoder(3,:));    % Least squares error visualization
+xlabel('Least square error');
+ylabel('Number of expected modes');
+ylim(N_modes_lim)
+
+ax2=axes('Position',ax1.Position,'Color','none','XAxisLocation','top','YAxisLocation','right','XColor',axesColorRoder(4,:),'YColor',axesColorRoder(1,:),'NextPlot','add','YTickLabel',[],'XScale','log');
+plot(ax2,InvConditionNumber,n_mode_row,'.-','Color',axesColorRoder(4,:));  % Condition number visualization
+xlabel(ax2,'Conditioning error');
+ylim(N_modes_lim)

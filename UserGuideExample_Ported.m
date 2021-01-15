@@ -9,10 +9,10 @@ K=[237315 -161000 0; -161000 398315 -161000; 0 -161000 398315];
 
 % FRF storage
 f_max=200;
-N=400;
-D_f=f_max/N;
+N_f_max=400;
+D_f=f_max/N_f_max;
 
-f_col=(0:N-1).'*D_f;
+f_col=(0:N_f_max-1).'*D_f;
 
 ii_row=[1,1,1];
 jj_row=[1,2,3];
@@ -62,8 +62,8 @@ end
 % for ii=1:n_FRF
 %     label_str=['\alpha_{',int2str(infoFRF(ii).response),',',int2str(infoFRF(ii).dir_excitation),'}'];
 %     
-%     Receptance_Calculated1=zeros(N,1);
-%     Receptance_Calculated2=zeros(N,1);
+%     Receptance_Calculated1=zeros(N_f_max,1);
+%     Receptance_Calculated2=zeros(N_f_max,1);
 %     for jj=1:n_modes
 %         LocalZone_ind=find((f_col>=f_mode_min(jj)) & (f_col<=f_mode_max(jj)));
 %         Receptance_local_col=Receptance_cols(LocalZone_ind,ii);
@@ -102,3 +102,9 @@ end
 
 % % Results saving
 % unv55write(infoMODE3,'3DL_LSCE.unv',1)
+
+% Compare with Matlab implementation
+N_t=2*N_f_max-2;
+[D_t,f_s,~]=samplingParameters_T_N(1/D_f,N_t);
+figure
+modalsd(Receptance_cols,f_col,f_s,'MaxModes',10)

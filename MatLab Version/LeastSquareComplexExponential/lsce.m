@@ -57,7 +57,7 @@ N_inputs=max([infoFRF.excitation]);
 f_max=f_col(end);
 N_t=2*N_f_max-2;  %This function assumes N_t=even. This is a valid assumption since N_t is usually power of 2.
 D_f=f_col(2)-f_col(1);
-[D_t,~,~]=samplingParameters_T_N(1/D_f,N_t);
+[D_t,f_s,~]=samplingParameters_T_N(1/D_f,N_t);
 
 h_cols=ifft(Receptance_cols,N_t,1,'symmetric')*N_t; % impulse response functions
 
@@ -74,15 +74,16 @@ if isempty(prec_f_r)
 end
 
 % The tolerance in damping
-prec_zeta_r=input('Percentage damping Tolerance (%): (default: 1%)')/100;
+prec_zeta_r=input('Percentage damping Tolerance (%): (default: 5%)')/100;
 if isempty(prec_zeta_r)
-    prec_zeta_r=1/100;
+    prec_zeta_r=5/100;
 end
 
 % Matrices for comparing results at each step
-f_r_mat=zeros(2*N_modes_expected,N_modes_expected);
-zeta_r_mat=zeros(2*N_modes_expected,N_modes_expected);
-f_zeta_r_stabilized_mat=false(2*N_modes_expected,N_modes_expected);
+f_r_mat=nan(2*N_modes_expected,N_modes_expected);
+zeta_r_mat=nan(2*N_modes_expected,N_modes_expected);
+f_r_stabilized_mat=false(2*N_modes_expected,N_modes_expected);
+f_zeta_r_stabilized_mat=f_r_stabilized_mat;
 
 InvConditionNumber=zeros(1,N_modes_expected);
 % err=zeros(1,N_modes_expected);
@@ -136,28 +137,13 @@ for n_mode=1:N_modes_expected
     N_r_unique=length(f_r_unique_col);
     f_r_mat(1:N_r_unique,n_mode)=f_r_new_col;
     zeta_r_mat(1:N_r_unique,n_mode)=zeta_r_new_col;
+    f_r_stabilized_mat(1:N_r_unique,n_mode)=f_r_stabilized_col;
     f_zeta_r_stabilized_mat(1:N_r_unique,n_mode)=f_zeta_r_stabilized_col;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Stabilization chart
-figure;
-subplot(2,1,1);
-stabdiag(f_r_mat,f_zeta_r_stabilized_mat,N_modes_expected,Receptance_cols,f_col);
-
-% Least squares error chart visualization
-subplot(2,1,2);
-yyaxis left
-semilogy(leastSquareError,'.-');
-ylabel('Least square error');
-grid on;
-
-% Error chart visualization
-yyaxis right
-semilogy(InvConditionNumber,'.-');
-ylabel('Conditioning error');
-xlabel('Number of expected modes');
-grid on;
+stabdiag(f_r_mat,f_r_stabilized_mat,f_zeta_r_stabilized_mat,Receptance_cols,f_col,leastSquareError,InvConditionNumber);
 
 % Selection of the model size
 N_modes=input('Based on the figures, select the number of modes: (defult is the number of iterations)\n');
@@ -169,7 +155,7 @@ else
     end
 end
 
-%warning off
+warning off
 
 % Results statement
 lsce_result=[f_r_new_col(f_r_stabilized_col),zeta_r_new_col(f_r_stabilized_col),f_zeta_r_stabilized_col(f_r_stabilized_col)];

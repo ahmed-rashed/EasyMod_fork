@@ -1,19 +1,5 @@
 function [f_r_new_col,zeta_r_new_col,f_r_stabilized_col,f_zeta_r_stabilized_col]=rec(f_r_col,zeta_r_col,f_r_old_col,zeta_r_old_col,prec_f_r,prec_zeta_r)
-% Modified by Ahmed Rashed
-% Compare frequency and damping of the current step vs those of the previous step
-%
-%  Input data:
-%  f_r_col: natural frequency vector,
-%  zeta_r_col: damping vector,
-%  prec_f_r: tolerance in frequency,
-%  prec_zeta_r: tolerance in damping.
-%
-%  Output data:
-%  f_r_new_col: updated eigenvalue matrix,
-%  zeta_r_new_col: updated damping matrix,
-%  bDampingFreq_Stabilized_r_new_vec: test matrix,
-%
-% Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS, Delphine LUPANT
+% Created by Ahmed Rashed
 
 f_r_new_col=f_r_col;
 zeta_r_new_col=zeta_r_col;
