@@ -82,7 +82,7 @@ end
 % Matrices for comparing results at each step
 f_r_mat=zeros(2*N_modes_expected,N_modes_expected);
 zeta_r_mat=zeros(2*N_modes_expected,N_modes_expected);
-bDampingFreq_Stabilized_mat=false(2*N_modes_expected,N_modes_expected);
+f_zeta_r_stabilized_mat=false(2*N_modes_expected,N_modes_expected);
 
 InvConditionNumber=zeros(1,N_modes_expected);
 % err=zeros(1,N_modes_expected);
@@ -114,30 +114,36 @@ for n_mode=1:N_modes_expected
 
     % Modal parameters extraction
     lambda_r_col=log(V_r_col)/D_t;
-    [w_r_col,zeta_r_col]=MDOF_Modal_Param_Visc(lambda_r_col);
-    ind1_col=find(w_r_col(w_r_col<2*pi*f_max));
-    [f_r_unique_col,ind2_col]=uniquetol(w_r_col(ind1_col),1e-7*max(abs(w_r_col)));    % Eliminate repeated natural frequencies (resulting from conjugate poles)
+%     [w_r_col,zeta_r_col]=MDOF_Modal_Param_Visc(lambda_r_col);
+    w_d_r_col=imag(lambda_r_col); 
+    delta_r_col=real(lambda_r_col); 
+    w_r_col=sqrt(w_d_r_col.^2+delta_r_col.^2); 
+    zeta_r_col=-(delta_r_col./w_r_col); 
+    ind1_col=find(w_r_col<2*pi*f_max);
+    [f_r_unique_col,ind2_col]=uniquetol(w_r_col(ind1_col)/2/pi,1e-7/max(abs(w_r_col/2/pi)));    % Eliminate repeated natural frequencies (resulting from conjugate poles)
     zeta_r_unique_col=zeta_r_col(ind1_col(ind2_col));
 
     if n_mode>1 % Stabilization validation (frequency and damping)
         f_r_old_col=f_r_new_col;
-        zeta_r_old_vec=zeta_r_new_col;
-        [f_r_new_col,zeta_r_new_col,bDampingFreq_Stabilized_r_new_vec]=rec(f_r_unique_col,zeta_r_unique_col,n_mode,f_r_old_col,zeta_r_old_vec,prec_f_r,prec_zeta_r);
+        zeta_r_old_col=zeta_r_new_col;
+        [f_r_new_col,zeta_r_new_col,f_r_stabilized_col,f_zeta_r_stabilized_col]=rec(f_r_unique_col,zeta_r_unique_col,f_r_old_col,zeta_r_old_col,prec_f_r,prec_zeta_r);
     else    %n_mode=1
         f_r_new_col=f_r_unique_col;
         zeta_r_new_col=zeta_r_unique_col;
+        f_r_stabilized_col=false(size(zeta_r_unique_col));
+        f_zeta_r_stabilized_col=f_r_stabilized_col;
     end
     N_r_unique=length(f_r_unique_col);
-    f_r_mat(1:N_r_unique,1)=f_r_new_col;
+    f_r_mat(1:N_r_unique,n_mode)=f_r_new_col;
     zeta_r_mat(1:N_r_unique,n_mode)=zeta_r_new_col;
-    bDampingFreq_Stabilized_mat(1:N_r_unique,n_mode)=bDampingFreq_Stabilized_r_new_vec;
+    f_zeta_r_stabilized_mat(1:N_r_unique,n_mode)=f_zeta_r_stabilized_col;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Stabilization chart
 figure;
 subplot(2,1,1);
-stabdiag(f_r_mat,bDampingFreq_Stabilized_mat,N_modes_expected,Receptance_cols,f_col);
+stabdiag(f_r_mat,f_zeta_r_stabilized_mat,N_modes_expected,Receptance_cols,f_col);
 
 % Least squares error chart visualization
 subplot(2,1,2);
@@ -166,15 +172,12 @@ end
 %warning off
 
 % Results statement
-ind=find(all(f_r_mat(:,N_modes-1:N_modes)~=0,2));
-lsce_result=[f_r_mat(ind,N_modes) zeta_r_mat(ind,N_modes) bDampingFreq_Stabilized_mat(ind,N_modes)];
+lsce_result=[f_r_new_col(f_r_stabilized_col),zeta_r_new_col(f_r_stabilized_col),f_zeta_r_stabilized_col(f_r_stabilized_col)];
 
-disp('Interpretation of stabilization state:');
-disp('1 : if damping stabilization');
-disp('0 : if frequency only stabilization');
-disp('     f_n        zeta   stabilization state');
+disp('        f_n        zeta         f_n & zeta stabilization state');
 disp(lsce_result);
 
 % Mode shape extraction
 [A_r_phys,w_n_r_phys,zeta_r_phys]=mode_lsce(h_cols,D_t,V_r_col,N_modes);
+
 infoMODE=mode_stab(infoFRF,A_r_phys,w_n_r_phys/2/pi,zeta_r_phys,lsce_result,prec_f_r,prec_zeta_r);
