@@ -98,7 +98,13 @@ end
 % % unv55write(infoMODE2,'3DL_line_fit.unv',1);
 
 %% Least-square complex exponential
-[RES,infoMODE3]=lsce(Receptance_cols,f_col,infoFRF);
+N_inputs=max([infoFRF.excitation]);
+[f_r_col,zeta_r_col,f_zeta_r_stabilized_col,A_r]=lsce(Receptance_cols,f_col,N_inputs);
+
+disp('        f_n        zeta         f_n & zeta stabilization state');
+disp([f_r_col,zeta_r_col,f_zeta_r_stabilized_col]);
+
+
 
 % % Results saving
 % unv55write(infoMODE3,'3DL_LSCE.unv',1)
