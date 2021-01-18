@@ -17,15 +17,15 @@ axesColorRoder=colororder;
 
 subplot(1,5,2:5);
 yyaxis left
-ind_f_zeta_r_stabilized_col=find(stabilized_f_zeta_r_combined_col);
-plot(f_r_combined_col(ind_f_zeta_r_stabilized_col),n_mode_combined_col(ind_f_zeta_r_stabilized_col),'+','Color',axesColorRoder(1,:),'DisplayName','Stable in frequency \& damping');
+ind_stabilized_f_zeta_r_col=find(stabilized_f_zeta_r_combined_col);
+plot(f_r_combined_col(ind_stabilized_f_zeta_r_col),n_mode_combined_col(ind_stabilized_f_zeta_r_col),'+','Color',axesColorRoder(1,:),'DisplayName','Stable');
 hold on
 
-ind_f_r_stabilized_col=find(stabilized_f_r_combined_col);
-ind_f_r_stabilized_only_col=setdiff(ind_f_r_stabilized_col,ind_f_zeta_r_stabilized_col);
+ind_stabilized_f_r_col=find(stabilized_f_r_combined_col);
+ind_f_r_stabilized_only_col=setdiff(ind_stabilized_f_r_col,ind_stabilized_f_zeta_r_col);
 plot(f_r_combined_col(ind_f_r_stabilized_only_col),n_mode_combined_col(ind_f_r_stabilized_only_col),'o','Color',axesColorRoder(1,:),'DisplayName','Stable in frequency');
 
-ind_f_r_not_stabilized_col=setdiff(find(~isnan(f_r_combined_col)),ind_f_r_stabilized_col);
+ind_f_r_not_stabilized_col=setdiff(find(~isnan(f_r_combined_col)),ind_stabilized_f_r_col);
 plot(f_r_combined_col(ind_f_r_not_stabilized_col),n_mode_combined_col(ind_f_r_not_stabilized_col),'.','Color',axesColorRoder(1,:),'DisplayName','Not stable in frequency');
 hold off
 

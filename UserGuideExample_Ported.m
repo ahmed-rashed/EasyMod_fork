@@ -99,18 +99,18 @@ end
 
 %% Least-square complex exponential
 N_inputs=max([infoFRF.excitation]);
-[f_r_col,zeta_r_col,f_zeta_r_stabilized_col,A_r]=lsce(Receptance_cols,f_col,N_inputs);
+[f_r_col,zeta_r_col,stabilized_f_zeta_r_col,A_r]=lsce(Receptance_cols,f_col,N_inputs);
 
 disp('        f_n        zeta         f_n & zeta stabilization state');
-disp([f_r_col,zeta_r_col,f_zeta_r_stabilized_col]);
+disp([f_r_col,zeta_r_col,stabilized_f_zeta_r_col]);
 
 
 
 % % Results saving
 % unv55write(infoMODE3,'3DL_LSCE.unv',1)
 
-% Compare with Matlab implementation
-N_t=2*N_f_max-2;
-[D_t,f_s,~]=samplingParameters_T_N(1/D_f,N_t);
-figure
-modalsd(Receptance_cols,f_col,f_s,'MaxModes',10)
+% % Compare with Matlab implementation
+% N_t=2*N_f_max-2;
+% [D_t,f_s,~]=samplingParameters_T_N(1/D_f,N_t);
+% figure
+% modalsd(Receptance_cols,f_col,f_s,'MaxModes',10)

@@ -14,17 +14,16 @@ function h_mat_rows=MatSur2(h_cols,N_inputs,p)
 
 [N_t,N_outputs]=size(h_cols);
 Neq=floor(N_t/(p+1)); %May be p+1=N_outputs
-% Sub-matrices h_3D assembly
+
 h_3D=zeros(Neq,(p+1)*N_inputs,N_outputs);
-for l=1:Neq
-    n=(p+1)*l;
+for n=1:Neq
     for m=1:p+1
-        h_3D(l,(m-1)*N_inputs+(1:N_inputs),:)=h_cols(n-(m-1),:);    %This constructs the h matrix of Maia equation (4.35)
+        h_3D(n,(m-1)*N_inputs+(1:N_inputs),:)=h_cols((p+1)*n-(m-1),:);    %h matrix of [Maia, eqn. (4.35)]
     end 
 end
 
 % Overdetermined matrix GG assembly
 h_mat_rows=zeros(Neq*N_outputs,(p+1)*N_inputs);
-for i=1:N_outputs
-   h_mat_rows((i-1)*Neq+(1:Neq),:)=h_3D(:,:,i); 
+for n_output=1:N_outputs
+   h_mat_rows((n_output-1)*Neq+(1:Neq),:)=h_3D(:,:,n_output); 
 end

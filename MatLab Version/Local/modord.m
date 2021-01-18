@@ -1,17 +1,17 @@
-function p=modord(N,N_inp)
+function p=modord(n_mode,N_inputs)
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
 %
 %  This function calculates the modal order p as a function of:
-%    - the number of modes (N),
-%    - the number of outputs (N_inp).
+%    - the number of modes (n_mode),
+%    - the number of outputs (N_inputs).
 %
 % Copyright (C) 2012 David WATTIAUX, Georges KOUROUSSIS, Delphine LUPANT
 
-% Building of data matrix
-Ni0=(1:40).'; 
-Ni1=2*Ni0; 
-Ni2=Ni0;
+n_mode_max=40;
+Ni=(1:n_mode_max).'; 
+Ni1=2*Ni; 
+Ni2=Ni;
 Ni3=[1;2;2;3;4;4;5;6;6;7;8;8;9;10;10;11;12;12;13;14;14;15;16;16;17;18;18;19;20;20;21;22;22;23;24;24;25;26;26;27];
 Ni4=[1;1;2;2;3;3;4;4;5;5;6;6;7;7;8;8;9;9;10;10;11;11;12;12;13;13;14;14;15;15;16;16;17;17;18;18;19;19;20;20];
 Ni5=[1;1;2;2;2;3;3;4;4;4;5;5;6;6;6;7;7;8;8;8;9;9;10;10;10;11;11;12;12;12;13;13;14;14;14;15;15;16;16;16];
@@ -21,8 +21,8 @@ Ni8=[1;1;1;1;2;2;2;2;3;3;3;3;4;4;4;4;5;5;5;5;6;6;6;6;7;7;7;7;8;8;8;8;9;9;9;9;10;
 Ni9=[1;1;1;1;2;2;2;2;2;3;3;3;3;4;4;4;4;4;5;5;5;5;6;6;6;6;6;7;7;7;7;8;8;8;8;8;9;9;9;9];
 Ni10=[1;1;1;1;1;2;2;2;2;2;3;3;3;3;3;4;4;4;4;4;5;5;5;5;5;6;6;6;6;6;7;7;7;7;7;8;8;8;8;8];
 Ni11=[1;1;1;1;1;2;2;2;2;2;2;3;3;3;3;3;4;4;4;4;4;4;5;5;5;5;5;6;6;6;6;6;6;7;7;7;7;7;8;8];
-P=[Ni0 Ni1 Ni2 Ni3 Ni4 Ni5 Ni6 Ni7 Ni8 Ni9 Ni10 Ni11]; 
+P=[Ni1 Ni2 Ni3 Ni4 Ni5 Ni6 Ni7 Ni8 Ni9 Ni10 Ni11]; 
 
 % Value searching
-p=P(N,N_inp+1); 
+p=P(n_mode,N_inputs); 
 
