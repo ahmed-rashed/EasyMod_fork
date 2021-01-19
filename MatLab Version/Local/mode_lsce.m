@@ -1,4 +1,4 @@
-function A_r=mode_lsce(h_cols,N_inputs,V_r_col,ind_col)
+function A_r_cols=mode_lsce(h_cols,N_inputs,V_r_col,ind_col)
  
 % ------------------   This file is part of EasyMod   ----------------------------
 %  Internal function
@@ -21,4 +21,4 @@ for n_output=1:N_outputs
     end
     A_r_temp1(:,n_output)=mean(A_r_temp2,2);
 end
-A_r=A_r_temp1(ind_col,:)./A_r_temp1(ind_col(1),:);   % Eigenvector normalization
+A_r_cols=A_r_temp1(ind_col,:);

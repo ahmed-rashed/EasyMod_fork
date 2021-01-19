@@ -1,4 +1,4 @@
-function [f_r_col,zeta_r_col,stabilized_f_zeta_r_col,A_r]=lsce(Receptance_cols,f_col,N_inputs, ...
+function [f_r_col,zeta_r_col,stabilized_f_zeta_r_col,A_r_cols]=lsce(Receptance_cols,f_col,N_inputs, ...
                                                                     f_r_tol,zeta_r_tol)   %Optional arguments
 %Created by Ahmed Rashed based on EasyMod
 
@@ -31,7 +31,7 @@ D_f=f_col(2)-f_col(1);
 h_cols=ifft(Receptance_cols,N_t,1,'symmetric')*N_t; % impulse response functions
 
 % Maximum iteration
-N_modes_expected=input('Input the expected number of modes (default: 10): ');
+N_modes_expected=input('Input the Model Order (twice the expected number of modes) (default: 10): ');   %My claim. Needs revision
 if isempty(N_modes_expected)
     N_modes_expected=10;
 end
@@ -97,7 +97,7 @@ end
 stabilizationDiagram(f_r_cell,stabilized_f_r_cell,stabilized_f_zeta_r_cell,Receptance_cols,f_col,leastSquareError_col,InvConditionNumber_col);
 
 % Selection of the model size
-N_modes=input('Based on the stabilization diagram, determine the number of modes (default is the number of iterations): ');
+N_modes=input('Based on the stabilization diagram, select an appropriate model order (minimum mode order with stable modes) (default is the mode order): ');
 if isempty(N_modes)
     N_modes=N_modes_expected;
 else
@@ -113,6 +113,6 @@ warning off
 f_r_col=f_r_cell{N_modes}(stabilized_f_r_cell{N_modes});
 zeta_r_col=zeta_r_cell{N_modes}(stabilized_f_r_cell{N_modes});
 stabilized_f_zeta_r_col=stabilized_f_zeta_r_cell{N_modes}(stabilized_f_r_cell{N_modes});
-A_r=mode_lsce(h_cols,N_inputs,V_r_cell{N_modes},ind_cell{N_modes}(stabilized_f_r_cell{N_modes})); % Mode shape extraction
+A_r_cols=mode_lsce(h_cols,N_inputs,V_r_cell{N_modes},ind_cell{N_modes}(stabilized_f_r_cell{N_modes})); % Mode shape extraction
 
 warning on
